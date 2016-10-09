@@ -1,6 +1,6 @@
 package com.antonio.droidcast.ioc;
 
-import com.antonio.droidcast.DroidCastApp;
+import android.app.Application;
 
 /**
  * Class that builds the graph and holds the module that will inject dependencies.
@@ -21,11 +21,13 @@ public class IOCProvider {
   /**
    * Build the graph with all the dependencies
    */
-  public static void build() {
+  public static void build(Application application) {
     if (droidCastComponent != null) {
       return;
     }
-    droidCastComponent = DaggerDroidCastComponent.builder().build();
+    droidCastComponent = DaggerDroidCastComponent.builder()
+        .droidCastModule(new DroidCastModule(application))
+        .build();
   }
 
   /**
