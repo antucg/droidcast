@@ -1,3 +1,7 @@
 <resources>
-  <string name="app_name">DroidCast</string>
+  <string name="app_name">Droid Cast</string>
+
+  <!-- Home view -->
+  <string name="home_recycler_empty">No casted items yet, click here to start</string>
+  <string name="home_recycler_resource_type">Resource type</string>
 </resources>

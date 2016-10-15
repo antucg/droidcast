@@ -6,7 +6,7 @@ import com.antonio.droidcast.models.Model;
 /**
  * Factory class that instantiate Dao's for storage
  */
-public class DaoFactory<T extends Model> {
+public class DaoFactory {
 
   // Android SharedPreferences instance
   private SharedPreferences sharedPreferences;
@@ -20,7 +20,7 @@ public class DaoFactory<T extends Model> {
     this.sharedPreferences = sharedPreferences;
   }
 
-  public Dao<T> get(Class<T> objectType) {
+  public <T extends Model> Dao<T> get(Class<T> objectType) {
     return new Dao<>(objectType, sharedPreferences);
   }
 }

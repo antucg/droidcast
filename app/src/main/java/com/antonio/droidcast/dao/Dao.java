@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by antonio.carrasco on 08/10/2016.
+ * Interface to deal with local storage system.
  */
-
 public class Dao<T extends Model> implements DaoOperations {
 
   private SharedPreferences sharedPreferences;
