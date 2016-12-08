@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import com.antonio.droidcast.models.CastItem;
 import com.antonio.droidcast.models.CastItemList;
 
@@ -60,6 +61,16 @@ public class HomeRecyclerAdapter extends RecyclerView.Adapter<HomeRecyclerAdapte
     public ViewHolder(View itemView) {
       super(itemView);
       ButterKnife.bind(this, itemView);
+    }
+
+    /**
+     * Handler for cast button click event.
+     *
+     * @param v Clicked view.
+     */
+    @OnClick(R.id.home_recycler_cast_button) public void onCastButtonClick(View v) {
+      System.out.println("Cast button clicked");
+      v.getContext().startActivity(MediaShareActivity.createIntent(v.getContext()));
     }
   }
 }

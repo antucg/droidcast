@@ -9,6 +9,7 @@
         <option name="modules">
           <set>
             <option value="$USER_HOME$/Google Drive/Projects/DroidCast" />
+            <option value="$USER_HOME$/Google Drive/Projects/DroidCast/FFmpegAndroid" />
             <option value="$USER_HOME$/Google Drive/Projects/DroidCast/app" />
           </set>
         </option>

@@ -10,6 +10,9 @@ import com.antonio.droidcast.dao.DaoException;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.ioc.IOCProvider;
 import com.antonio.droidcast.models.CastItemList;
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import javax.inject.Inject;
 
 public class HomeActivity extends BaseActivity {
@@ -19,6 +22,7 @@ public class HomeActivity extends BaseActivity {
   private RecyclerView.Adapter recyclerAdapter;
 
   @Inject DaoFactory daoFactory;
+  @Inject FFmpeg fFmpeg;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);

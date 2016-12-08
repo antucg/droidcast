@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.antonio.droidcast">
 
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
   <application
       android:name=".DroidCastApp"
       android:allowBackup="true"
@@ -9,12 +12,20 @@
       android:label="@string/app_name"
       android:supportsRtl="true"
       android:theme="@style/AppTheme">
+
+    <!-- Google Cast app id -->
+    <meta-data
+        android:name="castAppId"
+        android:value="38157D0C"/>
+
     <activity android:name=".HomeActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
 
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
+    </activity>
+    <activity android:name=".MediaShareActivity">
     </activity>
   </application>
 

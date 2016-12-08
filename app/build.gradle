@@ -6,7 +6,7 @@ android {
   buildToolsVersion "24.0.2"
   defaultConfig {
     applicationId "com.antonio.droidcast"
-    minSdkVersion 15
+    minSdkVersion 21
     targetSdkVersion 24
     versionCode 1
     versionName "1.0"
@@ -26,6 +26,10 @@ dependencies {
   compile 'com.android.support:appcompat-v7:24.2.1'
   compile 'com.android.support:cardview-v7:24.2.1'
   compile 'com.android.support:recyclerview-v7:24.2.1'
+  compile 'com.android.support:mediarouter-v7:24.2.1'
+  compile 'com.android.support:design:24.2.1'
+
+  compile 'com.google.android.gms:play-services-cast-framework:9.6.1'
 
   //  Butterknife
   compile 'com.jakewharton:butterknife:8.4.0'
@@ -42,6 +46,11 @@ dependencies {
   provided "org.projectlombok:lombok:1.12.6"
   apt "org.projectlombok:lombok:1.12.6"
 
+  // https://mvnrepository.com/artifact/com.github.hoary.ffmpeg/FFmpeg-android-arm
+//  compile group: 'com.github.hoary.ffmpeg', name: 'FFmpeg-android-arm', version: '2.0.1.1'
+//  compile 'com.writingminds:FFmpegAndroid:0.3.2'
+  compile project(':FFmpegAndroid')
+
   //  Test
   testCompile 'junit:junit:4.12'
 
@@ -55,4 +64,5 @@ dependencies {
   //  androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
   //    exclude group: 'com.android.support', module: 'support-annotations'
   //  })
+  compile project(path: ':FFmpegAndroid')
 }

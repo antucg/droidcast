@@ -4,4 +4,7 @@
   <!-- Home view -->
   <string name="home_recycler_empty">No casted items yet, click here to start</string>
   <string name="home_recycler_resource_type">Resource type</string>
+
+  <!-- Media Share activity -->
+  <string name="label_permissions">Please enable Microphone and Storage permissions.</string>
 </resources>
