@@ -9,8 +9,8 @@
         <option name="modules">
           <set>
             <option value="$USER_HOME$/Google Drive/Projects/DroidCast" />
-            <option value="$USER_HOME$/Google Drive/Projects/DroidCast/FFmpegAndroid" />
             <option value="$USER_HOME$/Google Drive/Projects/DroidCast/app" />
+            <option value="$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

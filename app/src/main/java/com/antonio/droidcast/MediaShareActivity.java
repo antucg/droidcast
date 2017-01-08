@@ -1,7 +1,9 @@
 package com.antonio.droidcast;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
@@ -9,8 +11,6 @@ import android.hardware.display.VirtualDisplay;
 import android.media.MediaRecorder;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
-import android.net.LocalServerSocket;
-import android.net.LocalSocket;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,19 +26,12 @@ import android.view.Surface;
 import android.view.View;
 import android.widget.Toast;
 import com.antonio.droidcast.ioc.IOCProvider;
-import com.github.hiteshsondhi88.libffmpeg.FFServer;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import javax.inject.Inject;
+import net.majorkernelpanic.streaming.Session;
+import net.majorkernelpanic.streaming.SessionBuilder;
+import net.majorkernelpanic.streaming.audio.AudioQuality;
+import net.majorkernelpanic.streaming.video.VideoQuality;
 
-public class MediaShareActivity extends BaseActivity {
-
-  @Inject FFmpeg ffmpeg;
-  @Inject FFServer ffServer;
+public class MediaShareActivity extends BaseActivity implements Session.Callback {
 
   private static final int REQUEST_CODE = 1000;
   private int mScreenDensity;
@@ -52,6 +45,7 @@ public class MediaShareActivity extends BaseActivity {
   private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
   private static final int REQUEST_PERMISSIONS = 10;
   private static final int BUFFER_SIZE = 1048576;
+  private Session mSession;
 
   private final String VIDEO_PATH =
       Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/video.mp4";
@@ -92,8 +86,7 @@ public class MediaShareActivity extends BaseActivity {
 
     mProjectionManager =
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-    //askForPermissionAndShare();
-    startStreaming();
+    askForPermissionAndShare();
   }
 
   private void askForPermissionAndShare() {
@@ -125,7 +118,9 @@ public class MediaShareActivity extends BaseActivity {
 
   public void startScreenShare() {
     initRecorder();
+  }
 
+  private void recordScreen() {
     if (mMediaProjection == null) {
       startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
       return;
@@ -136,42 +131,59 @@ public class MediaShareActivity extends BaseActivity {
   }
 
   private void initRecorder() {
-    try {
+    //try {
+    //
+    //  LocalServerSocket localServerSocket = new LocalServerSocket("Server socket");
+    //  LocalSocket receiver = new LocalSocket();
+    //  receiver.connect(localServerSocket.getLocalSocketAddress());
+    //  receiver.setReceiveBufferSize(BUFFER_SIZE);
+    //
+    //  LocalSocket sender = localServerSocket.accept();
+    //  sender.setSendBufferSize(BUFFER_SIZE);
+    //
+    //  mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+    //  mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+    //  mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+    //  mMediaRecorder.setOutputFile(sender.getFileDescriptor());
+    //  mMediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    //  mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+    //  mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+    //  mMediaRecorder.setVideoEncodingBitRate(512 * 1000);
+    //  mMediaRecorder.setVideoFrameRate(30);
+    //  int rotation = getWindowManager().getDefaultDisplay().getRotation();
+    //  int orientation = ORIENTATIONS.get(rotation + 90);
+    //  mMediaRecorder.setOrientationHint(orientation);
+    //  mMediaRecorder.prepare();
+    //  mMediaRecorder.start();
+    //
+    //  InputStream is = receiver.getInputStream();
+    //  byte buffer[] = new byte[4];
+    //  // Skip all atoms preceding mdat atom
+    //  while (!Thread.interrupted()) {
+    //    while (is.read() != 'm');
+    //    is.read(buffer,0,3);
+    //    if (buffer[0] == 'd' && buffer[1] == 'a' && buffer[2] == 't') break;
+    //  }
+    //
+    //} catch (IOException e) {
+    //  e.printStackTrace();
+    //}
 
-      LocalServerSocket localServerSocket = new LocalServerSocket("Server socket");
-      LocalSocket receiver = new LocalSocket();
-      receiver.connect(localServerSocket.getLocalSocketAddress());
-      receiver.setReceiveBufferSize(BUFFER_SIZE);
-
-      LocalSocket sender = localServerSocket.accept();
-      sender.setSendBufferSize(BUFFER_SIZE);
-
-      mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-      mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-      mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-      mMediaRecorder.setOutputFile(sender.getFileDescriptor());
-      mMediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-      mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-      mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-      mMediaRecorder.setVideoEncodingBitRate(512 * 1000);
-      mMediaRecorder.setVideoFrameRate(30);
-      int rotation = getWindowManager().getDefaultDisplay().getRotation();
-      int orientation = ORIENTATIONS.get(rotation + 90);
-      mMediaRecorder.setOrientationHint(orientation);
-      mMediaRecorder.prepare();
-      mMediaRecorder.start();
-
-      InputStream is = receiver.getInputStream();
-      byte buffer[] = new byte[4];
-      // Skip all atoms preceding mdat atom
-      while (!Thread.interrupted()) {
-        while (is.read() != 'm');
-        is.read(buffer,0,3);
-        if (buffer[0] == 'd' && buffer[1] == 'a' && buffer[2] == 't') break;
-      }
-
-    } catch (IOException e) {
-      e.printStackTrace();
+    mSession = SessionBuilder.getInstance()
+        .setCallback(this)
+        //.setSurfaceView(mSurfaceView)
+        .setDestination("192.168.1.10")
+        .setPreviewOrientation(90)
+        .setContext(getApplicationContext())
+        .setAudioEncoder(SessionBuilder.AUDIO_NONE)
+        .setAudioQuality(new AudioQuality(16000, 32000))
+        .setVideoEncoder(SessionBuilder.VIDEO_H264)
+        .setVideoQuality(new VideoQuality(320, 240, 20, 500000))
+        .build();
+    if (!mSession.isStreaming()) {
+      mSession.configure();
+    } else {
+      mSession.stop();
     }
   }
 
@@ -189,8 +201,41 @@ public class MediaShareActivity extends BaseActivity {
     mMediaProjection = mProjectionManager.getMediaProjection(resultCode, data);
     mMediaProjection.registerCallback(mMediaProjectionCallback, null);
     mVirtualDisplay = createVirtualDisplay();
-    mMediaRecorder.start();
+    //mMediaRecorder.start();
     startStreaming();
+  }
+
+  @Override public void onBitrateUpdate(long bitrate) {
+    Log.d(TAG, "Bitrate: " + bitrate);
+  }
+
+  @Override public void onSessionError(int message, int streamType, Exception e) {
+    if (e != null) {
+      logError(e.getMessage());
+    }
+  }
+
+  @Override public void onPreviewStarted() {
+
+  }
+
+  @Override public void onSessionConfigured() {
+    recordScreen();
+    Log.d(TAG, "Preview configured.");
+    // Once the stream is configured, you can get a SDP formated session description
+    // that you can send to the receiver of the stream.
+    // For example, to receive the stream in VLC, store the session description in a .sdp file
+    // and open it with VLC while streming.
+    Log.d(TAG, mSession.getSessionDescription());
+    mSession.start();
+  }
+
+  @Override public void onSessionStarted() {
+
+  }
+
+  @Override public void onSessionStopped() {
+
   }
 
   private class MediaProjectionCallback extends MediaProjection.Callback {
@@ -199,8 +244,19 @@ public class MediaShareActivity extends BaseActivity {
     }
   }
 
+  private void logError(final String msg) {
+    final String error = (msg == null) ? "Error unknown" : msg;
+    AlertDialog.Builder builder = new AlertDialog.Builder(MediaShareActivity.this);
+    builder.setMessage(error).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+      }
+    });
+    AlertDialog dialog = builder.create();
+    dialog.show();
+  }
+
   private VirtualDisplay createVirtualDisplay() {
-    return mMediaProjection.createVirtualDisplay("MediaSahreActivity", DISPLAY_WIDTH,
+    return mMediaProjection.createVirtualDisplay("MediaShareActivity", DISPLAY_WIDTH,
         DISPLAY_HEIGHT, mScreenDensity, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
         mMediaRecorder.getSurface(), null /*Callbacks*/, null
                 /*Handler*/);
@@ -209,8 +265,8 @@ public class MediaShareActivity extends BaseActivity {
   public void stopScreenShare() {
     Log.v(TAG, "Stopping Recording");
     stopStreaming();
-    mMediaRecorder.stop();
-    mMediaRecorder.reset();
+    //mMediaRecorder.stop();
+    //mMediaRecorder.reset();
 
     if (mVirtualDisplay == null) {
       return;
@@ -262,107 +318,16 @@ public class MediaShareActivity extends BaseActivity {
   }
 
   private void startStreaming() {
-    try {
-      String ffserverConfPath = getFilesDir().getAbsolutePath() + File.separator + "ffserver.conf";
-
-      ffServer.execute(new String[] { "-d", "-f", ffserverConfPath },
-          new FFmpegExecuteResponseHandler() {
-            @Override public void onSuccess(String message) {
-              System.out.println("startStreaming - success " + message);
-            }
-
-            @Override public void onProgress(String message) {
-              System.out.println("### progress " + message);
-            }
-
-            @Override public void onFailure(String message) {
-              System.out.println("startStreaming - failure " + message);
-              finish();
-            }
-
-            @Override public void onStart() {
-              System.out.println("startStreaming - start");
-              startFFMpeg();
-              //convert();
-            }
-
-            @Override public void onFinish() {
-              System.out.println("startStreaming - finish");
-            }
-          });
-    } catch (FFmpegCommandAlreadyRunningException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void convert() {
-    try {
-      ffmpeg.execute(new String[] {
-          "-i", VIDEO_PATH, "-movflags", "faststart", VIDEO_PATH2
-      }, new FFmpegExecuteResponseHandler() {
-        @Override public void onSuccess(String message) {
-          System.out.println("startFFMpeg - success " + message);
-        }
-
-        @Override public void onProgress(String message) {
-
-        }
-
-        @Override public void onFailure(String message) {
-          System.out.println("startFFMpeg - failure " + message);
-        }
-
-        @Override public void onStart() {
-
-        }
-
-        @Override public void onFinish() {
-          System.out.println("#### finish");
-          startFFMpeg();
-        }
-      });
-    } catch (FFmpegCommandAlreadyRunningException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void startFFMpeg() {
-    try {
-      ffmpeg.execute(new String[] {
-          "-re", "-loglevel", "debug", "-framerate", "30", "-i", VIDEO_PATH2,
-          "udp://localhost:8090/feed1.ffm"
-      }, new FFmpegExecuteResponseHandler() {
-        @Override public void onSuccess(String message) {
-          System.out.println("startFFMpeg - success " + message);
-        }
-
-        @Override public void onProgress(String message) {
-
-        }
-
-        @Override public void onFailure(String message) {
-          System.out.println("startFFMpeg - failure " + message);
-        }
-
-        @Override public void onStart() {
-
-        }
-
-        @Override public void onFinish() {
-
-        }
-      });
-    } catch (FFmpegCommandAlreadyRunningException e) {
-      e.printStackTrace();
-    }
+    //if (!mSession.isStreaming()) {
+    //  mSession.configure();
+    //} else {
+    //  mSession.stop();
+    //}
   }
 
   private void stopStreaming() {
-    if (ffmpeg.isFFmpegCommandRunning()) {
-      ffmpeg.killRunningProcesses();
-    }
-    if (ffServer.isFFmpegCommandRunning()) {
-      ffServer.killRunningProcesses();
+    if (mSession.isStreaming()) {
+      mSession.stop();
     }
   }
 }

@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/DroidCast.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/DroidCast.iml" />
-      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/FFmpegAndroid/FFmpegAndroid.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/FFmpegAndroid/FFmpegAndroid.iml" />
       <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/app/app.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/app/app.iml" />
+      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming/libstreaming.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming/libstreaming.iml" />
     </modules>
   </component>
 </project>

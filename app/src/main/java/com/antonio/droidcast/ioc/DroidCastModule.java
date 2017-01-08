@@ -6,8 +6,6 @@ import android.content.SharedPreferences;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.dao.SharedPreferencesFactory;
 import com.antonio.droidcast.utils.MetaDataProvider;
-import com.github.hiteshsondhi88.libffmpeg.FFServer;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
@@ -40,13 +38,5 @@ import javax.inject.Singleton;
 
   @Provides @Singleton MetaDataProvider providesMetaData() {
     return new MetaDataProvider();
-  }
-
-  @Provides @Singleton FFmpeg providesFFmpeg() {
-    return FFmpeg.getInstance(applicationContext);
-  }
-
-  @Provides @Singleton FFServer providesFFServer() {
-    return FFServer.getInstance(applicationContext);
   }
 }

@@ -3,10 +3,6 @@ package com.antonio.droidcast;
 import android.app.Application;
 import com.antonio.droidcast.ioc.DroidCastComponent;
 import com.antonio.droidcast.ioc.IOCProvider;
-import com.github.hiteshsondhi88.libffmpeg.FFServer;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 import javax.inject.Inject;
 
 /**
@@ -15,8 +11,6 @@ import javax.inject.Inject;
 public class DroidCastApp extends Application {
 
   private static DroidCastComponent droidCastComponent;
-  @Inject FFmpeg ffmpeg;
-  @Inject FFServer ffServer;
 
   @Override public void onCreate() {
     super.onCreate();
@@ -24,48 +18,6 @@ public class DroidCastApp extends Application {
     // Init dagger component
     IOCProvider.build(this);
     IOCProvider.getInstance().inject(this);
-
-    new CopyFfserverConfAsyncTask().execute();
-
-    try {
-      ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
-
-        @Override public void onStart() {
-        }
-
-        @Override public void onFailure() {
-        }
-
-        @Override public void onSuccess() {
-        }
-
-        @Override public void onFinish() {
-        }
-      });
-    } catch (FFmpegNotSupportedException e) {
-      // Handle if FFmpeg is not supported by device
-      System.out.println("Error loading ffmpeg");
-    }
-
-    try {
-      ffServer.loadBinary(new LoadBinaryResponseHandler() {
-
-        @Override public void onStart() {
-        }
-
-        @Override public void onFailure() {
-        }
-
-        @Override public void onSuccess() {
-        }
-
-        @Override public void onFinish() {
-        }
-      });
-    } catch (FFmpegNotSupportedException e) {
-      // Handle if FFmpeg is not supported by device
-      System.out.println("Error loading ffserver");
-    }
   }
 
   /**
