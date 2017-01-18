@@ -77,7 +77,7 @@ public class MP4Config {
 		mProfilLevel = stsdBox.getProfileLevel();
 
 		mp4Parser.close();
-		
+
 	}
 
 	public String getProfileLevel() {

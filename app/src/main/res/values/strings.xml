@@ -7,4 +7,5 @@
 
   <!-- Media Share activity -->
   <string name="label_permissions">Please enable Microphone and Storage permissions.</string>
+  <string name="stop">Stop</string>
 </resources>
