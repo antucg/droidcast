@@ -75,6 +75,13 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
     IOCProvider.getInstance().inject(this);
 
+    // Get the display size and density.
+    DisplayMetrics metrics = getResources().getDisplayMetrics();
+    int screenWidth = metrics.widthPixels;
+    int screenHeight = metrics.heightPixels;
+    int screenDensity = metrics.densityDpi;
+    System.out.println("### screen: " + screenWidth + " " + screenHeight+ " " +screenDensity);
+
     mProjectionManager =
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     askForPermission();
@@ -191,14 +198,13 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
     DisplayMetrics metrics = new DisplayMetrics();
     getWindowManager().getDefaultDisplay().getMetrics(metrics);
-    int screenDensity = metrics.densityDpi;
 
     // Configures the SessionBuilder
     SessionBuilder.getInstance()
         .setCallback(this)
         .setPreviewOrientation(90)
         .setContext(getApplicationContext())
-        .setScreenDensity(screenDensity)
+        .setDisplayMetrics(metrics)
         .setMediaProjection(mMediaProjection)
         .setAudioEncoder(SessionBuilder.AUDIO_NONE)
         .setVideoEncoder(SessionBuilder.SCREEN_H264);
@@ -324,11 +330,12 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   //  }
   //}
 
-  //@Override public void onDestroy() {
-  //  stopScreenShare();
-  //  super.onDestroy();
-  //}
-  //
+  @Override public void onDestroy() {
+    //stopScreenShare();
+    stopService(new Intent(this,RtspServer.class));
+    super.onDestroy();
+  }
+
   @Override public void onBitrateUpdate(long bitrate) {
     //Log.d(TAG, "Bitrate: " + bitrate);
   }

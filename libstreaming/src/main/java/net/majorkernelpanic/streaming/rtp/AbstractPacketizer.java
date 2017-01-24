@@ -97,6 +97,7 @@ abstract public class AbstractPacketizer {
 	/** For debugging purposes. */
 	protected static String printBuffer(byte[] buffer, int start,int end) {
 		String str = "";
+		//for (int i=start;i<end;i++) str+=","+Integer.toBinaryString(buffer[i] & 0xFF).replace(' ', '0');
 		for (int i=start;i<end;i++) str+=","+Integer.toHexString(buffer[i]&0xFF);
 		return str;
 	}

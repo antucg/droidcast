@@ -73,13 +73,32 @@ public class MediaCodecInputStream extends InputStream {
 				while (!Thread.interrupted() && !mClosed) {
 					mIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, 500000);
 					if (mIndex>=0 ){
+						System.out.println("### 0");
 						//Log.d(TAG,"Index: "+mIndex+" Time: "+mBufferInfo.presentationTimeUs+" size: "+mBufferInfo.size);
-						mBuffer = mBuffers[mIndex];
+						//mBuffer = mBuffers[mIndex];
+						//mBuffer.position(0);
+
+						mBuffer = mMediaCodec.getOutputBuffer(mIndex);
+						if (mBuffer == null) {
+							throw new RuntimeException("couldn't fetch buffer at index " + mIndex);
+						}
 						mBuffer.position(0);
+
+						//if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+						//	mBufferInfo.size = 0;
+						//}
+            //
+						//if (mBufferInfo.size != 0) {
+						//	mBuffer.position(mBufferInfo.offset);
+						//	mBuffer.limit(mBufferInfo.offset + mBufferInfo.size);
+						//}
+
 						break;
 					} else if (mIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+						System.out.println("### 1");
 						mBuffers = mMediaCodec.getOutputBuffers();
 					} else if (mIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+						System.out.println("### 2");
 						mMediaFormat = mMediaCodec.getOutputFormat();
 						Log.i(TAG,mMediaFormat.toString());
 					} else if (mIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {

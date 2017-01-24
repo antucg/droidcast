@@ -24,6 +24,7 @@ import android.content.Context;
 import android.hardware.Camera.CameraInfo;
 import android.media.projection.MediaProjection;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import java.io.IOException;
 import net.majorkernelpanic.streaming.audio.AACStream;
 import net.majorkernelpanic.streaming.audio.AMRNBStream;
@@ -79,7 +80,7 @@ public class SessionBuilder {
   private String mDestination = null;
   private Session.Callback mCallback = null;
   private MediaProjection mediaProjection = null;
-  private int screenDensity;
+  private DisplayMetrics displayMetrics;
 
   // Removes the default public constructor
   private SessionBuilder() {
@@ -144,12 +145,10 @@ public class SessionBuilder {
         session.addVideoTrack(stream);
         break;
       case SCREEN_H264:
-        ScreenStream screenStream = new ScreenStream();
+        ScreenStream screenStream = new ScreenStream(mediaProjection, displayMetrics);
         if (mContext != null) {
           screenStream.setPreferences(PreferenceManager.getDefaultSharedPreferences(mContext));
         }
-        screenStream.setMediaProjection(mediaProjection, screenDensity);
-
         session.addVideoTrack(screenStream);
         break;
     }
@@ -265,8 +264,8 @@ public class SessionBuilder {
     return this;
   }
 
-  public SessionBuilder setScreenDensity(int screenDensity) {
-    this.screenDensity = screenDensity;
+  public SessionBuilder setDisplayMetrics(DisplayMetrics displayMetrics) {
+    this.displayMetrics = displayMetrics;
     return this;
   }
 
@@ -329,8 +328,8 @@ public class SessionBuilder {
     return mediaProjection;
   }
 
-  public int getScreenDensity() {
-    return screenDensity;
+  public DisplayMetrics getDisplayMetrics() {
+    return displayMetrics;
   }
 
   /** Returns a new {@link SessionBuilder} with the same configuration. */
@@ -349,6 +348,6 @@ public class SessionBuilder {
         .setContext(mContext)
         .setCallback(mCallback)
         .setMediaProjection(mediaProjection)
-        .setScreenDensity(screenDensity);
+        .setDisplayMetrics(displayMetrics);
   }
 }

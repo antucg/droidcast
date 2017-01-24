@@ -29,7 +29,10 @@
     <activity android:name=".MediaShareActivity">
     </activity>
 
-    <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer" />
+    <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer"/>
+
+    <activity android:name=".TestActivity">
+    </activity>
   </application>
 
 </manifest>

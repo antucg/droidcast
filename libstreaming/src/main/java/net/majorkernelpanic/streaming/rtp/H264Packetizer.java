@@ -203,6 +203,7 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
 			buffer = socket.requestBuffer();
 			buffer[rtphl] = header[4];
 			len = fill(buffer, rtphl+1,  naluLength-1);
+			System.out.println(AbstractPacketizer.printBuffer(buffer, 0, buffer.length));
 			socket.updateTimestamp(ts);
 			socket.markNextPacket();
 			super.send(naluLength+rtphl);
