@@ -1,6 +1,5 @@
 package net.majorkernelpanic.streaming.screen;
 
-import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
@@ -15,7 +14,6 @@ import android.util.Log;
 import android.view.Surface;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import net.majorkernelpanic.streaming.hw.EncoderDebugger;
 import net.majorkernelpanic.streaming.mp4.MP4Config;
 import net.majorkernelpanic.streaming.rtp.H264Packetizer;
 import net.majorkernelpanic.streaming.rtp.MediaCodecInputStream;
@@ -44,8 +42,7 @@ public class ScreenStream extends VideoStream {
   private int mTrackIndex = -1;
   private final Handler mDrainHandler = new Handler(Looper.getMainLooper());
   private Runnable mDrainEncoderRunnable = new Runnable() {
-    @Override
-    public void run() {
+    @Override public void run() {
       drainEncoder();
     }
   };
@@ -70,9 +67,12 @@ public class ScreenStream extends VideoStream {
   // Should not be called by the UI thread
   private MP4Config testMediaCodecAPI() throws RuntimeException, IOException {
     try {
+      H264Parameters h264Parameters =
+          new H264Parameters(mediaProjection, displayMetrics, mSettings);
+      return h264Parameters.getConfig();
       //EncoderDebugger debugger = EncoderDebugger.debug(mSettings, VIDEO_WIDTH, VIDEO_HEIGHT);
       //return new MP4Config(debugger.getB64SPS(), debugger.getB64PPS());
-      return new MP4Config("/sdcard/video.mp4");
+      //return new MP4Config("/sdcard/video.mp4");
     } catch (Exception e) {
       // Fallback on the old streaming method using the MediaRecorder API
       Log.e(TAG, "Resolution not supported with the MediaCodec API.");
@@ -125,9 +125,8 @@ public class ScreenStream extends VideoStream {
     }
 
     // Start the video input.
-    mediaProjection.createVirtualDisplay("Recording Display", VIDEO_WIDTH,
-        VIDEO_HEIGHT, displayMetrics.densityDpi, 0 /* flags */, mediaCodecSurface,
-        null /* callback */, null /* handler */);
+    mediaProjection.createVirtualDisplay("Recording Display", VIDEO_WIDTH, VIDEO_HEIGHT,
+        displayMetrics.densityDpi, 0 /* flags */, mediaCodecSurface, null /* callback */, null /* handler */);
     //mediaProjection.createVirtualDisplay("Recording Display", displayMetrics.widthPixels,
     //    displayMetrics.heightPixels, displayMetrics.densityDpi, 0 /* flags */, mediaCodecSurface,
     //    null /* callback */, null /* handler */);

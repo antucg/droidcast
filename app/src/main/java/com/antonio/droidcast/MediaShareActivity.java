@@ -80,7 +80,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     int screenWidth = metrics.widthPixels;
     int screenHeight = metrics.heightPixels;
     int screenDensity = metrics.densityDpi;
-    System.out.println("### screen: " + screenWidth + " " + screenHeight+ " " +screenDensity);
 
     mProjectionManager =
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
