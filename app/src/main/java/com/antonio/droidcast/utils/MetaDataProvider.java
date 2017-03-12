@@ -1,43 +1,49 @@
 package com.antonio.droidcast.utils;
 
 import android.app.Activity;
-import android.content.pm.ActivityInfo;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import com.antonio.droidcast.ioc.IOCProvider;
+import javax.inject.Inject;
 
 /**
  * Utility class that reads values from manifest's meta data.
  */
 public class MetaDataProvider {
 
+  @Inject Context context;
+
   // Tag for logs
   private final String TAG = this.getClass().getSimpleName();
 
+  public MetaDataProvider() {
+    IOCProvider.getInstance().inject(this);
+  }
+
   /**
-   * Method that returns the the cast application id.
-   *
-   * @param activity Activity that wants to access the id.
-   * @return Google Cast application id.
+   * Return Nsd "private" key
+   * @return Nsd key
    */
-  public String getCastAppId(Activity activity) {
-    return getMetaData(activity, "castAppId");
+  public String getNsdKey() {
+    return getMetaData("nsdKey");
   }
 
   /**
    * Method that returns a property from the manifest's meta data.
    *
-   * @param activity Activity that wants to access to the data.
    * @param property Property whose value we want to read.
    * @return Value.
    */
-  private String getMetaData(Activity activity, String property) {
-    ActivityInfo activityInfo = null;
+  private String getMetaData(String property) {
+    ApplicationInfo applicationInfo = null;
     try {
-      activityInfo = activity.getPackageManager()
-          .getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
+      applicationInfo = context.getPackageManager()
+          .getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
 
-      Bundle metaData = activityInfo.metaData;
+      Bundle metaData = applicationInfo.metaData;
       if (metaData == null) {
         Log.e(TAG, "[MetaDataProvider] - getMetadata(), error reading metadata from manifest.");
       } else {

@@ -3,6 +3,7 @@ package com.antonio.droidcast;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import com.antonio.droidcast.ioc.IOCProvider;
 
 /**
  * Base class for activities that implements some of the functionality common to all activities.

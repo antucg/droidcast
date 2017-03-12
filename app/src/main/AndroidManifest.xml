@@ -3,7 +3,6 @@
     package="com.antonio.droidcast">
 
   <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
   <application
@@ -13,21 +12,25 @@
       android:label="@string/app_name"
       android:supportsRtl="true"
       android:theme="@style/AppTheme">
-
-    <!-- Google Cast app id -->
     <meta-data
-        android:name="castAppId"
-        android:value="38157D0C"/>
+        android:name="nsdKey"
+        android:value="$tSeqpL4vvWU?$Ce"/>
 
-    <activity android:name=".HomeActivity">
+    <activity
+        android:name=".HomeActivity"
+        android:configChanges="orientation|keyboardHidden|screenSize">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
 
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
-    <activity android:name=".MediaShareActivity">
-    </activity>
+    <activity
+        android:name=".MediaShareActivity"
+        android:configChanges="orientation|keyboardHidden|screenSize"/>
+    <activity
+        android:name=".VideoActivity"
+        android:configChanges="orientation|keyboardHidden|screenSize"/>
 
     <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer"/>
 

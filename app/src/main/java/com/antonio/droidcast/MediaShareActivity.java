@@ -1,63 +1,73 @@
 package com.antonio.droidcast;
 
 import android.Manifest;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.display.VirtualDisplay;
-import android.media.MediaRecorder;
+import android.media.MediaCodec;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.SparseIntArray;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import com.antonio.droidcast.ioc.IOCProvider;
+import com.antonio.droidcast.utils.NsdUtils;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Random;
+import javax.inject.Inject;
 import net.majorkernelpanic.streaming.Session;
 import net.majorkernelpanic.streaming.SessionBuilder;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
+import net.majorkernelpanic.streaming.screen.MediaCodecUtils;
 
 public class MediaShareActivity extends BaseActivity implements Session.Callback {
 
+  @Inject NsdUtils nsdUtils;
+
   private static final int REQUEST_CODE = 1000;
+  public static final String USERNAME = "d";
+  private static final int NOTIFICATION_ID = 1;
+  private static final String INTENT_KEY_STOP = "intent_key_stop";
+
   private MediaProjectionManager mProjectionManager;
-  private static final int DISPLAY_WIDTH = 1920;
-  private static final int DISPLAY_HEIGHT = 1080;
   private MediaProjection mMediaProjection;
-  private VirtualDisplay mVirtualDisplay;
-  private MediaProjectionCallback mMediaProjectionCallback;
-  private MediaRecorder mMediaRecorder;
-  private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
   private static final int REQUEST_PERMISSIONS = 10;
-  private static final int BUFFER_SIZE = 1048576;
-  private Session mSession;
+  private RtspServer rtspServerService;
+  private boolean bound = false;
+  private String code;
 
-  private final String VIDEO_PATH =
-      Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/video.mp4";
-
-  static {
-    ORIENTATIONS.append(Surface.ROTATION_0, 90);
-    ORIENTATIONS.append(Surface.ROTATION_90, 0);
-    ORIENTATIONS.append(Surface.ROTATION_180, 270);
-    ORIENTATIONS.append(Surface.ROTATION_270, 180);
-  }
+  @BindView(R.id.code_wrapper) LinearLayout codeWrapper;
+  @BindView(R.id.media_share_code_textview) TextView mediaShareCodeTextView;
+  @BindView(R.id.media_share_waiting_text) TextView mediaShareWaitingText;
+  @BindView(R.id.media_share_progress) ProgressBar mediaShareProgressBar;
+  @BindView(R.id.media_share_client_connected) TextView mediaShareClientConnected;
 
   /**
    * Create an intent that opens this activity
@@ -66,64 +76,56 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
    * @return Intent
    */
   public static Intent createIntent(Context context) {
-    return new Intent(context, MediaShareActivity.class);
+    Intent intent = new Intent(context, MediaShareActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    return intent;
+  }
+
+  public static Intent createStopIntent(Context context) {
+    Intent intent = new Intent(context, MediaShareActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    intent.putExtra(INTENT_KEY_STOP, true);
+    return intent;
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_media_share);
 
+    ButterKnife.bind(this);
     IOCProvider.getInstance().inject(this);
-
-    // Get the display size and density.
-    DisplayMetrics metrics = getResources().getDisplayMetrics();
-    int screenWidth = metrics.widthPixels;
-    int screenHeight = metrics.heightPixels;
-    int screenDensity = metrics.densityDpi;
 
     mProjectionManager =
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     askForPermission();
+    Random rnd = new Random();
+    code = Integer.toString(100000 + rnd.nextInt(900000));
+    mediaShareCodeTextView.setText(code);
   }
 
-  @Override public boolean onCreateOptionsMenu(Menu menu) {
-    MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.media_share_menu, menu);
-    return true;
-  }
-
-  @Override public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.stop:
-        //mMediaRecorder.stop();
-        //stopScreenShare();
-        //parseMP4();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+  @Override protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    if (intent.getBooleanExtra(INTENT_KEY_STOP, false)) {
+      stopService(new Intent(this, RtspServer.class));
     }
   }
 
   private void askForPermission() {
-    if (ContextCompat.checkSelfPermission(MediaShareActivity.this,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE) + ContextCompat.checkSelfPermission(
-        MediaShareActivity.this, Manifest.permission.RECORD_AUDIO)
+    if (ContextCompat.checkSelfPermission(MediaShareActivity.this, Manifest.permission.RECORD_AUDIO)
         != PackageManager.PERMISSION_GRANTED) {
       if (ActivityCompat.shouldShowRequestPermissionRationale(MediaShareActivity.this,
-          Manifest.permission.WRITE_EXTERNAL_STORAGE)
-          || ActivityCompat.shouldShowRequestPermissionRationale(MediaShareActivity.this,
           Manifest.permission.RECORD_AUDIO)) {
         Snackbar.make(findViewById(android.R.id.content), R.string.label_permissions,
             Snackbar.LENGTH_INDEFINITE).setAction("ENABLE", new View.OnClickListener() {
           @Override public void onClick(View v) {
             ActivityCompat.requestPermissions(MediaShareActivity.this, new String[] {
-                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO
+                Manifest.permission.RECORD_AUDIO
             }, REQUEST_PERMISSIONS);
           }
         }).show();
       } else {
         ActivityCompat.requestPermissions(MediaShareActivity.this, new String[] {
-            Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO
+            Manifest.permission.RECORD_AUDIO
         }, REQUEST_PERMISSIONS);
       }
     } else {
@@ -135,8 +137,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
       @NonNull int[] grantResults) {
     switch (requestCode) {
       case REQUEST_PERMISSIONS: {
-        if ((grantResults.length > 0)
-            && (grantResults[0] + grantResults[1]) == PackageManager.PERMISSION_GRANTED) {
+        if ((grantResults.length == 1) && (grantResults[0]) == PackageManager.PERMISSION_GRANTED) {
           buildMediaProjection();
         } else {
           Snackbar.make(findViewById(android.R.id.content), R.string.label_permissions,
@@ -175,7 +176,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
       finish();
       return;
     }
-    mMediaProjectionCallback = new MediaProjectionCallback();
+    MediaProjectionCallback mMediaProjectionCallback = new MediaProjectionCallback();
     mMediaProjection = mProjectionManager.getMediaProjection(resultCode, data);
     mMediaProjection.registerCallback(mMediaProjectionCallback, null);
     initSession();
@@ -184,16 +185,10 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private class MediaProjectionCallback extends MediaProjection.Callback {
     @Override public void onStop() {
       Log.i(TAG, "MediaProjectionCallback onStop");
-      //stopScreenShare();
     }
   }
 
   private void initSession() {
-
-    // Sets the port of the RTSP server to 1234
-    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    editor.putString(RtspServer.KEY_PORT, String.valueOf(1235));
-    editor.commit();
 
     DisplayMetrics metrics = new DisplayMetrics();
     getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -201,7 +196,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     // Configures the SessionBuilder
     SessionBuilder.getInstance()
         .setCallback(this)
-        .setPreviewOrientation(90)
         .setContext(getApplicationContext())
         .setDisplayMetrics(metrics)
         .setMediaProjection(mMediaProjection)
@@ -209,134 +203,48 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
         .setVideoEncoder(SessionBuilder.SCREEN_H264);
 
     // Starts the RTSP server
-    this.startService(new Intent(this, RtspServer.class));
+    bindService(new Intent(this, RtspServer.class), serviceConnection, Context.BIND_AUTO_CREATE);
+    startService(new Intent(this, RtspServer.class));
+    nsdUtils.registerNsdService(this, code);
+    buildNotificationControl();
   }
 
-  //private void shareScreen() {
-  //  initRecorder();
-  //  recordScreen();
-  //}
-  //
-  //private void initRecorder() {
-  //  try {
-  //    mMediaRecorder = new MediaRecorder();
-  //    mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-  //    mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-  //    mMediaRecorder.setOutputFile(VIDEO_PATH);
-  //    mMediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-  //    mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-  //    mMediaRecorder.setVideoEncodingBitRate(512 * 1000);
-  //    mMediaRecorder.setVideoFrameRate(30);
-  //    int rotation = getWindowManager().getDefaultDisplay().getRotation();
-  //    int orientation = ORIENTATIONS.get(rotation + 90);
-  //    mMediaRecorder.setOrientationHint(orientation);
-  //    //mMediaRecorder.setMaxDuration(3000);
-  //    mMediaRecorder.prepare();
-  //
-  //    //mMediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
-  //    //  @Override public void onInfo(MediaRecorder mr, int what, int extra) {
-  //    //    Log.d(TAG, "MediaRecorder callback called !");
-  //    //    if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
-  //    //      Log.d(TAG, "MediaRecorder: MAX_DURATION_REACHED");
-  //    //    } else if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
-  //    //      Log.d(TAG, "MediaRecorder: MAX_FILESIZE_REACHED");
-  //    //    } else if (what == MediaRecorder.MEDIA_RECORDER_INFO_UNKNOWN) {
-  //    //      Log.d(TAG, "MediaRecorder: INFO_UNKNOWN");
-  //    //    } else {
-  //    //      Log.d(TAG, "WTF ?");
-  //    //    }
-  //    //    mMediaRecorder.stop();
-  //    //    mMediaRecorder.release();
-  //    //    mMediaRecorder = null;
-  //    //    stopScreenShare();
-  //    //    parseMP4();
-  //    //  }
-  //    //});
-  //  } catch (IOException e) {
-  //    e.printStackTrace();
-  //  }
+  private void buildNotificationControl() {
 
-  // TODO: pass media recorder to builder and from there to screenstream
-  //mSession = SessionBuilder.getInstance()
-  //    .setCallback(this)
-  //    //.setSurfaceView(mSurfaceView)
-  //    .setDestination("192.168.1.10")
-  //    //.setPreviewOrientation(90)
-  //    .setCallback(this)
-  //    .setContext(getApplicationContext())
-  //    .setAudioEncoder(SessionBuilder.AUDIO_NONE)
-  //    .setAudioQuality(new AudioQuality(16000, 32000))
-  //    .setVideoEncoder(SessionBuilder.SCREEN_H264)
-  //    .setVideoQuality(new VideoQuality(320, 240, 20, 500000))
-  //    .build();
-  //if (!mSession.isStreaming()) {
-  //  mSession.configure();
-  //}
-  //else {
-  //  mSession.stop();
-  //}
+    Intent stopIntent = createStopIntent(this);
+    PendingIntent stopPendingIntent =
+        PendingIntent.getActivity(this, (int) System.currentTimeMillis(), stopIntent,
+            PendingIntent.FLAG_ONE_SHOT);
 
-  //private void recordScreen() {
-  //  if (mMediaProjection == null) {
-  //    startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
-  //    return;
-  //  }
-  //  mVirtualDisplay = createVirtualDisplay();
-  //  mMediaRecorder.start();
-  //}
-  //
-  //
-  //
-  //private VirtualDisplay createVirtualDisplay() {
-  //  return mMediaProjection.createVirtualDisplay("MediaShareActivity", DISPLAY_WIDTH,
-  //      DISPLAY_HEIGHT, mScreenDensity, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-  //      mMediaRecorder.getSurface(), null /*Callbacks*/, null
-  //              /*Handler*/);
-  //}
+    NotificationCompat.Builder mBuilder =
+        new NotificationCompat.Builder(this)
+            .setSmallIcon(R.drawable.notification_bar_icon)
+            //.setSmallIcon(R.drawable.ic_media_route_off_holo_light)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.manage_streaming))
+            .addAction(R.drawable.ic_media_stop, getString(R.string.notification_stop),
+                stopPendingIntent);
+    Intent resultIntent = MediaShareActivity.createIntent(this);
+    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+    stackBuilder.addParentStack(HomeActivity.class);
+    stackBuilder.addNextIntent(resultIntent);
+    PendingIntent resultPendingIntent =
+        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+    mBuilder.setContentIntent(resultPendingIntent);
+    NotificationManager mNotificationManager =
+        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+  }
 
-  //public void stopScreenShare() {
-  //  Log.v(TAG, "Stopping Recording");
-  //
-  //  if (mVirtualDisplay == null) {
-  //    return;
-  //  }
-  //  mVirtualDisplay.release();
-  //  //mMediaRecorder.release(); //If used: mMediaRecorder object cannot
-  //  // be reused again
-  //  destroyMediaProjection();
-  //}
-  //
-  //private void destroyMediaProjection() {
-  //  if (mMediaProjection != null) {
-  //    mMediaProjection.stop();
-  //    mMediaProjection.unregisterCallback(mMediaProjectionCallback);
-  //    mMediaProjection = null;
-  //  }
-  //  Log.i(TAG, "MediaProjection Stopped");
-  //}
-  //
-  //private void parseMP4() {
-  //  try {
-  //    MP4Config config = new MP4Config(VIDEO_PATH);
-  //    Log.i(TAG, "config: "
-  //        + config.getProfileLevel()
-  //        + ","
-  //        + config.getB64SPS()
-  //        + ","
-  //        + config.getB64PPS());
-  //  } catch (IOException e) {
-  //    e.printStackTrace();
-  //  }
-  //}
-
-  @Override public void onDestroy() {
-    //stopScreenShare();
-    stopService(new Intent(this,RtspServer.class));
-    super.onDestroy();
+  @Override protected void onStop() {
+    super.onStop();
+    if (bound) {
+      unbindService(serviceConnection);
+      bound = false;
+    }
   }
 
   @Override public void onBitrateUpdate(long bitrate) {
-    //Log.d(TAG, "Bitrate: " + bitrate);
   }
 
   @Override public void onSessionError(int message, int streamType, Exception e) {
@@ -346,24 +254,24 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   }
 
   @Override public void onPreviewStarted() {
-    Log.d(TAG, "onPreviewStarted");
+    Log.d(TAG, "[MediaShareActivity] - onPreviewStarted()");
   }
 
   @Override public void onSessionConfigured() {
-    Log.d(TAG, "Preview configured.");
-    // Once the stream is configured, you can get a SDP formated session description
-    // that you can send to the receiver of the stream.
-    // For example, to receive the stream in VLC, store the session description in a .sdp file
-    // and open it with VLC while streming.
-    //Log.d(TAG, mSession.getSessionDescription());
+    Log.d(TAG, "[MediaShareActivity] - onSessionConfigured()");
   }
 
   @Override public void onSessionStarted() {
-    Log.d(TAG, "onSessionStarted");
+    codeWrapper.postDelayed(new Runnable() {
+      @Override public void run() {
+        codeWrapper.setVisibility(View.GONE);
+        mediaShareClientConnected.setVisibility(View.VISIBLE);
+      }
+    }, 1000);
   }
 
   @Override public void onSessionStopped() {
-    Log.d(TAG, "onSessionStopped");
+    Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
   }
 
   private void logError(final String msg) {
@@ -377,21 +285,16 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     dialog.show();
   }
 
-  //private void configureSession() {
-  //  // Sets the port of the RTSP server to 1234
-  //  SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-  //  editor.putString(RtspServer.KEY_PORT, String.valueOf(1234));
-  //  editor.commit();
-  //
-  //  // Configures the SessionBuilder
-  //  SessionBuilder.getInstance()
-  //      .setSurfaceView()
-  //      .setPreviewOrientation(90)
-  //      .setContext(getApplicationContext())
-  //      .setAudioEncoder(SessionBuilder.AUDIO_NONE)
-  //      .setVideoEncoder(SessionBuilder.VIDEO_H264);
-  //
-  //  // Starts the RTSP server
-  //  this.startService(new Intent(this,RtspServer.class));
-  //}
+  private ServiceConnection serviceConnection = new ServiceConnection() {
+    @Override public void onServiceConnected(ComponentName name, IBinder service) {
+      RtspServer.LocalBinder binder = (RtspServer.LocalBinder) service;
+      rtspServerService = binder.getService();
+      bound = true;
+      rtspServerService.setAuthorization(USERNAME, code);
+    }
+
+    @Override public void onServiceDisconnected(ComponentName name) {
+      bound = false;
+    }
+  };
 }

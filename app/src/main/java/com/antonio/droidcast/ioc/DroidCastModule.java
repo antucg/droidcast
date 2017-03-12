@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.dao.SharedPreferencesFactory;
 import com.antonio.droidcast.utils.MetaDataProvider;
+import com.antonio.droidcast.utils.NsdUtils;
 import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
@@ -38,5 +39,9 @@ import javax.inject.Singleton;
 
   @Provides @Singleton MetaDataProvider providesMetaData() {
     return new MetaDataProvider();
+  }
+
+  @Provides @Singleton NsdUtils providesNsdUtils() {
+    return new NsdUtils();
   }
 }

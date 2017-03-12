@@ -1,42 +1,47 @@
 package com.antonio.droidcast;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.display.DisplayManager;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.view.Display;
+import android.util.Log;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.Toast;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import net.majorkernelpanic.streaming.screen.MediaCodecUtils;
 
-public class TestActivity extends AppCompatActivity {
+public class TestActivity extends BaseActivity {
 
-  private MediaProjectionManager mMediaProjectionManager;
-  private static final int REQUEST_CODE_CAPTURE_PERM = 1234;
-  private static final String VIDEO_MIME_TYPE = "video/avc";
-  private static final int VIDEO_WIDTH = 1280;
-  private static final int VIDEO_HEIGHT = 720;
-  private boolean mMuxerStarted = false;
+  private static final int REQUEST_CODE = 1000;
+  private MediaProjectionManager mProjectionManager;
   private MediaProjection mMediaProjection;
-  private Surface mInputSurface;
-  private MediaMuxer mMuxer;
-  private MediaCodec mVideoEncoder;
-  private MediaCodec.BufferInfo mVideoBufferInfo;
-  private int mTrackIndex = -1;
+  private MediaCodec mMediaCodec;
+  private Surface mySurface;
+  private VirtualDisplay virtualDisplay;
+  private Rect displaySize;
+  @BindView(R.id.surface_view) SurfaceView surfaceView;
+
   private final Handler mDrainHandler = new Handler(Looper.getMainLooper());
   private Runnable mDrainEncoderRunnable = new Runnable() {
-    @Override
-    public void run() {
+    @Override public void run() {
       drainEncoder();
     }
   };
@@ -49,164 +54,119 @@ public class TestActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_test);
 
-    mMediaProjectionManager = (MediaProjectionManager) getSystemService(
-        android.content.Context.MEDIA_PROJECTION_SERVICE);
-    Intent permissionIntent = mMediaProjectionManager.createScreenCaptureIntent();
-    startActivityForResult(permissionIntent, REQUEST_CODE_CAPTURE_PERM);
+    ButterKnife.bind(this);
+
+    surfaceView.getHolder().addCallback(new MyCallback());
   }
 
-  public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    if (REQUEST_CODE_CAPTURE_PERM == requestCode) {
-      if (resultCode == RESULT_OK) {
-        mMediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, intent);
-        startRecording(); // defined below
-      } else {
-        // user did not grant permissions
+  public class MyCallback implements SurfaceHolder.Callback {
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format,
+        int width, int height) {
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+      mProjectionManager =
+          (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+
+      if (mMediaProjection == null) {
+        startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
       }
     }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+      // and here you need to stop it
+    }
   }
 
-  private void startRecording() {
-    DisplayManager dm = (DisplayManager)getSystemService(Context.DISPLAY_SERVICE);
-    Display defaultDisplay = dm.getDisplay(Display.DEFAULT_DISPLAY);
-    if (defaultDisplay == null) {
-      throw new RuntimeException("No display found.");
+  @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode != REQUEST_CODE) {
+      Log.e(TAG, "Unknown request code: " + requestCode);
+      return;
     }
-    prepareVideoEncoder();
-
-    try {
-      mMuxer = new MediaMuxer("/sdcard/video.mp4", MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-    } catch (IOException ioe) {
-      throw new RuntimeException("MediaMuxer creation failed", ioe);
+    if (resultCode != RESULT_OK) {
+      Toast.makeText(this, "Screen Cast Permission Denied", Toast.LENGTH_SHORT).show();
+      finish();
+      return;
     }
-
-    // Get the display size and density.
-    DisplayMetrics metrics = getResources().getDisplayMetrics();
-    int screenWidth = metrics.widthPixels;
-    int screenHeight = metrics.heightPixels;
-    int screenDensity = metrics.densityDpi;
-
-    // Start the video input.
-    mMediaProjection.createVirtualDisplay("Recording Display", screenWidth,
-        screenHeight, screenDensity, 0 /* flags */, mInputSurface,
-        null /* callback */, null /* handler */);
-
-    // Start the encoders
-    drainEncoder();
+    MediaProjectionCallback mMediaProjectionCallback = new MediaProjectionCallback();
+    mMediaProjection = mProjectionManager.getMediaProjection(resultCode, data);
+    mMediaProjection.registerCallback(mMediaProjectionCallback, null);
+    test();
   }
 
-  private void prepareVideoEncoder() {
-    mVideoBufferInfo = new MediaCodec.BufferInfo();
-    MediaFormat format = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, VIDEO_WIDTH, VIDEO_HEIGHT);
-    int frameRate = 30; // 30 fps
+  private class MediaProjectionCallback extends MediaProjection.Callback {
+    @Override public void onStop() {
+      Log.i(TAG, "MediaProjectionCallback onStop");
+    }
+  }
 
-    // Set some required properties. The media codec may fail if these aren't defined.
-    format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
-        MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-    format.setInteger(MediaFormat.KEY_BIT_RATE, 6000000); // 6Mbps
-    format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);
-    format.setInteger(MediaFormat.KEY_CAPTURE_RATE, frameRate);
-    format.setInteger(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 1000000 / frameRate);
-    format.setInteger(MediaFormat.KEY_CHANNEL_COUNT, 1);
-    format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1); // 1 seconds between I-frames
+  private void test() {
 
-    // Create a MediaCodec encoder and configure it. Get a Surface we can use for recording into.
+    DisplayMetrics metrics = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+    MediaCodecUtils mediaCodecUtils = new MediaCodecUtils();
+
     try {
-      mVideoEncoder = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
-      mVideoEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-      mInputSurface = mVideoEncoder.createInputSurface();
-      mVideoEncoder.start();
+      mMediaCodec = mediaCodecUtils.buildMediaCodec();
     } catch (IOException e) {
-      releaseEncoders();
+      return;
     }
+
+    Surface mediaCodecSurface = mMediaCodec.createInputSurface();
+    mMediaCodec.start();
+
+    VirtualDisplay virtualDisplay =
+        mediaCodecUtils.buildVirtualDisplay(mMediaProjection, mediaCodecSurface /*surfaceView.getHolder().getSurface()*/, metrics);
+    mySurface = virtualDisplay.getSurface();
+    drainEncoder();
+    buildNotificationControl();
   }
 
-  private boolean drainEncoder() {
+  private void drainEncoder() {
     mDrainHandler.removeCallbacks(mDrainEncoderRunnable);
+    int mIndex;
+    MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
+    ByteBuffer mBuffer;
     while (true) {
-      int bufferIndex = mVideoEncoder.dequeueOutputBuffer(mVideoBufferInfo, 0);
-
-      if (bufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
-        System.out.println("### foo 0");
-        // nothing available yet
+      mIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, 500000);
+      if (mIndex >= 0) {
+        mBuffer = mMediaCodec.getOutputBuffer(mIndex);
+        if (mBuffer == null) {
+          throw new RuntimeException("couldn't fetch buffer at index " + mIndex);
+        }
+        mBuffer.position(0);
+        mMediaCodec.releaseOutputBuffer(mIndex, false);
+        Log.v(TAG, "Buffer available");
+      } else if (mIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+        Log.v(TAG, "MediaFormat changed");
+      } else if (mIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
+        Log.v(TAG, "No buffer available...");
         break;
-      } else if (bufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-        System.out.println("### foo 1");
-        // should happen before receiving buffers, and should only happen once
-        if (mTrackIndex >= 0) {
-          throw new RuntimeException("format changed twice");
-        }
-        mTrackIndex = mMuxer.addTrack(mVideoEncoder.getOutputFormat());
-        if (!mMuxerStarted && mTrackIndex >= 0) {
-          mMuxer.start();
-          mMuxerStarted = true;
-        }
-      } else if (bufferIndex < 0) {
-        System.out.println("### foo 2");
-        // not sure what's going on, ignore it
-      } else {
-        System.out.println("### foo 3");
-        ByteBuffer encodedData = mVideoEncoder.getOutputBuffer(bufferIndex);
-        if (encodedData == null) {
-          throw new RuntimeException("couldn't fetch buffer at index " + bufferIndex);
-        }
-
-        if ((mVideoBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
-          mVideoBufferInfo.size = 0;
-        }
-
-        if (mVideoBufferInfo.size != 0) {
-          if (mMuxerStarted) {
-            encodedData.position(mVideoBufferInfo.offset);
-            encodedData.limit(mVideoBufferInfo.offset + mVideoBufferInfo.size);
-            mMuxer.writeSampleData(mTrackIndex, encodedData, mVideoBufferInfo);
-          } else {
-            // muxer not started
-          }
-        }
-
-        mVideoEncoder.releaseOutputBuffer(bufferIndex, false);
-
-        if ((mVideoBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-          break;
-        }
       }
     }
-
     mDrainHandler.postDelayed(mDrainEncoderRunnable, 10);
-    return false;
   }
 
-  @Override protected void onDestroy() {
-    releaseEncoders();
-    super.onDestroy();
-  }
+  private void buildNotificationControl() {
 
-  private void releaseEncoders() {
-    mDrainHandler.removeCallbacks(mDrainEncoderRunnable);
-    if (mMuxer != null) {
-      if (mMuxerStarted) {
-        mMuxer.stop();
-      }
-      mMuxer.release();
-      mMuxer = null;
-      mMuxerStarted = false;
-    }
-    if (mVideoEncoder != null) {
-      mVideoEncoder.stop();
-      mVideoEncoder.release();
-      mVideoEncoder = null;
-    }
-    if (mInputSurface != null) {
-      mInputSurface.release();
-      mInputSurface = null;
-    }
-    if (mMediaProjection != null) {
-      mMediaProjection.stop();
-      mMediaProjection = null;
-    }
-    mVideoBufferInfo = null;
-    mDrainEncoderRunnable = null;
-    mTrackIndex = -1;
+    NotificationCompat.Builder mBuilder =
+        new NotificationCompat.Builder(this)
+            .setSmallIcon(android.R.drawable.stat_sys_download)
+            //.setSmallIcon(R.drawable.ic_media_route_off_holo_light)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.manage_streaming));
+    Intent resultIntent = MediaShareActivity.createIntent(this);
+    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+    stackBuilder.addParentStack(HomeActivity.class);
+    stackBuilder.addNextIntent(resultIntent);
+    PendingIntent resultPendingIntent =
+        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+    mBuilder.setContentIntent(resultPendingIntent);
+    NotificationManager mNotificationManager =
+        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    mNotificationManager.notify(1, mBuilder.build());
   }
 }

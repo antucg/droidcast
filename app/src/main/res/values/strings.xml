@@ -4,8 +4,20 @@
   <!-- Home view -->
   <string name="home_recycler_empty">No casted items yet, click here to start</string>
   <string name="home_recycler_resource_type">Resource type</string>
+  <string name="home_connect_button">Connect</string>
+  <string name="home_type_code">Type here code</string>
+  <string name="home_welcome_message">Welcome to Droid Cast, enter code below to connect to another
+    device or start streaming yourself.
+  </string>
 
   <!-- Media Share activity -->
-  <string name="label_permissions">Please enable Microphone and Storage permissions.</string>
-  <string name="stop">Stop</string>
+  <string name="label_permissions">Please enable Microphone permision.</string>
+  <string name="media_share_give_code">Give this code to the client:</string>
+  <string name="waiting_for_client">Waiting for client …</string>
+  <string name="client_connected">Client connected</string>
+
+  <!-- Notification -->
+  <string name="manage_streaming">Manage the streaming from this bar</string>
+  <string name="notification_stop">Stop screen sharing</string>
+
 </resources>

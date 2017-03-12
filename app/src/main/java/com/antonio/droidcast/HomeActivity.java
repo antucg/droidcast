@@ -1,24 +1,22 @@
 package com.antonio.droidcast;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.EditText;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.antonio.droidcast.dao.DaoException;
+import butterknife.OnClick;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.ioc.IOCProvider;
-import com.antonio.droidcast.models.CastItemList;
 import javax.inject.Inject;
+import net.majorkernelpanic.streaming.rtsp.RtspServer;
 
 public class HomeActivity extends BaseActivity {
 
-  @BindView(R.id.home_recycler_view) RecyclerView homeRecyclerView;
-  private RecyclerView.LayoutManager recyclerLayoutManager;
-  private RecyclerView.Adapter recyclerAdapter;
-
   @Inject DaoFactory daoFactory;
+  @BindView(R.id.home_code_editText) EditText codeEditText;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -27,26 +25,23 @@ public class HomeActivity extends BaseActivity {
     ButterKnife.bind(this);
     IOCProvider.getInstance().inject(this);
 
-    setupRecyclerView();
+    // Sets the port of the RTSP server to 1234
+    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+    editor.putString(RtspServer.KEY_PORT, String.valueOf(1234));
+    editor.apply();
   }
 
   /**
-   * Setup recycler view, layout manater and adapter.
+   * Handle start streaming button click event.
+   *
+   * @param v Clicked view.
    */
-  private void setupRecyclerView() {
-    // Setup recycler view
-    homeRecyclerView.setHasFixedSize(true);
-    recyclerLayoutManager = new LinearLayoutManager(this);
-    homeRecyclerView.setLayoutManager(recyclerLayoutManager);
+  @OnClick(R.id.home_stream_button) public void startStreaming(View v) {
+    startActivity(MediaShareActivity.createIntent(this));
+    //startActivity(TestActivity.createIntent(this));
+  }
 
-    CastItemList castItemList = new CastItemList();
-    try {
-      castItemList = daoFactory.get(CastItemList.class).get();
-    } catch (DaoException e) {
-      Log.e(TAG, "[HomeActivity] - onCreate(), error reading CastItemList from storage");
-    }
-
-    recyclerAdapter = new HomeRecyclerAdapter(castItemList);
-    homeRecyclerView.setAdapter(recyclerAdapter);
+  @OnClick(R.id.home_connect_button) public void onConnect(View v) {
+    startActivity(VideoActivity.createIntent(this, codeEditText.getText().toString()));
   }
 }

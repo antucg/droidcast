@@ -10,7 +10,9 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import net.majorkernelpanic.streaming.exceptions.ConfNotSupportedException;
 import net.majorkernelpanic.streaming.mp4.MP4Config;
 
 /**
@@ -31,6 +33,9 @@ class H264Parameters {
    */
   private static final int VERSION = 1;
 
+  private MediaProjection mediaProjection;
+  private DisplayMetrics displayMetrics;
+  private SharedPreferences sharedPreferences;
   private MediaCodec mediaCodec;
   private Surface mediaCodecSurface;
   private VirtualDisplay virtualDisplay;
@@ -40,30 +45,43 @@ class H264Parameters {
   private String b64SPS;
   private int videoWidth;
   private int videoHeight;
-  private SharedPreferences sharedPreferences;
 
   H264Parameters(MediaProjection mediaProjection, DisplayMetrics displayMetrics,
       SharedPreferences sharedPreferences) {
-    MediaCodecUtils mediaCodecUtils = new MediaCodecUtils();
-    mediaCodec = mediaCodecUtils.buildMediaCodec();
-    mediaCodecSurface = mediaCodec.createInputSurface();
-    mediaCodec.start();
-    virtualDisplay =
-        mediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics);
+    this.mediaProjection = mediaProjection;
+    this.displayMetrics = displayMetrics;
     this.sharedPreferences = sharedPreferences;
     videoWidth = MediaCodecUtils.VIDEO_WIDTH;
     videoHeight = MediaCodecUtils.VIDEO_HEIGHT;
   }
 
-  MP4Config getConfig() {
+  MP4Config getConfig() throws ConfNotSupportedException {
 
     if (!checkTestNeeded()) {
       String resolution = videoWidth + "x" + videoHeight + "-";
+      if (!sharedPreferences.getBoolean(PREF_PREFIX + resolution + "successful", false)) {
+        throw new ConfNotSupportedException("This device can't create specified codec");
+      }
+
       b64PPS = sharedPreferences.getString(PREF_PREFIX + resolution + "pps", "");
       b64SPS = sharedPreferences.getString(PREF_PREFIX + resolution + "sps", "");
       return new MP4Config(b64SPS, b64PPS);
     }
 
+    MediaCodecUtils mediaCodecUtils = new MediaCodecUtils();
+
+    try {
+      mediaCodec = mediaCodecUtils.buildMediaCodec();
+    } catch (IOException e) {
+      releaseEncoders();
+      saveTestResult(false);
+      return null;
+    }
+
+    mediaCodecSurface = mediaCodec.createInputSurface();
+    mediaCodec.start();
+    virtualDisplay =
+        mediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics);
     drainEncoder();
     return new MP4Config(b64SPS, b64PPS);
   }
@@ -137,7 +155,7 @@ class H264Parameters {
     b64PPS = Base64.encodeToString(PPS, 0, PPS.length, Base64.NO_WRAP);
     b64SPS = Base64.encodeToString(SPS, 0, SPS.length, Base64.NO_WRAP);
     releaseEncoders();
-    saveTestResult();
+    saveTestResult(true);
   }
 
   private void releaseEncoders() {
@@ -156,7 +174,7 @@ class H264Parameters {
     }
   }
 
-  private boolean checkTestNeeded() {
+  private boolean  checkTestNeeded() {
     // Forces the test
     if (sharedPreferences == null) {
       return true;
@@ -178,16 +196,20 @@ class H264Parameters {
     return false;
   }
 
-  private void saveTestResult() {
+  private void saveTestResult(boolean successful) {
     String resolution = videoWidth + "x" + videoHeight + "-";
     SharedPreferences.Editor editor = sharedPreferences.edit();
 
-    editor.putInt(PREF_PREFIX + resolution + "lastSdk", Build.VERSION.SDK_INT);
-    editor.putInt(PREF_PREFIX + resolution + "lastVersion", VERSION);
-    editor.putString(PREF_PREFIX + resolution + "pps", b64PPS);
-    editor.putString(PREF_PREFIX + resolution + "sps", b64SPS);
-
-    editor.apply();
+    if (!successful) {
+      editor.putBoolean(PREF_PREFIX + resolution + "successful", false);
+    } else {
+      editor.putBoolean(PREF_PREFIX + resolution + "successful", true);
+      editor.putInt(PREF_PREFIX + resolution + "lastSdk", Build.VERSION.SDK_INT);
+      editor.putInt(PREF_PREFIX + resolution + "lastVersion", VERSION);
+      editor.putString(PREF_PREFIX + resolution + "pps", b64PPS);
+      editor.putString(PREF_PREFIX + resolution + "sps", b64SPS);
+    }
+    editor.commit();
   }
 
   private long timestamp() {
