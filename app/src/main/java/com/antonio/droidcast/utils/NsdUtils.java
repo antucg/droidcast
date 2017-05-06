@@ -8,6 +8,8 @@ import android.util.Base64;
 import android.util.Log;
 import com.antonio.droidcast.ioc.IOCProvider;
 import com.antonio.droidcast.models.ConnectionInfo;
+import com.youview.tinydnssd.DiscoverResolver;
+import com.youview.tinydnssd.MDNSDiscover;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Map;
@@ -20,7 +22,7 @@ import javax.inject.Inject;
 public class NsdUtils {
 
   private final String TAG = this.getClass().getSimpleName();
-  private final String NSD_ATTRIBUTE_KEY = "nsd_attribute_key";
+  private final String NSD_ATTRIBUTE_KEY = "nsd_key";
   private final String NSD_SERVICE_NAME = "DroidCast";
   private final String NSD_SERVICE_TYPE = "_rtsp._udp.";
 
@@ -30,6 +32,7 @@ public class NsdUtils {
   private NsdManager.DiscoveryListener discoveryListener;
   private NsdManager.ResolveListener resolveListener;
   private NsdManager nsdManager;
+  private DiscoverResolver resolver;
 
   public NsdUtils() {
     IOCProvider.getInstance().inject(this);
@@ -78,6 +81,7 @@ public class NsdUtils {
       }
     };
 
+    Log.d(TAG, "nsdKey: " + nsdKey + ", code: " + mediaShareCode);
     String raw = nsdKey + mediaShareCode;
     String encoded = Base64.encodeToString(raw.getBytes(), Base64.NO_WRAP);
 
@@ -98,58 +102,25 @@ public class NsdUtils {
       return;
     }
 
-    resolveListener = new NsdManager.ResolveListener() {
-      @Override public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-        if (callback != null) {
-          callback.onError();
-        }
-      }
-
-      @Override public void onServiceResolved(NsdServiceInfo serviceInfo) {
-        Map<String, byte[]> attributes = serviceInfo.getAttributes();
-        String attributeKey = new String(attributes.get(NSD_ATTRIBUTE_KEY));
-        String raw = nsdKey + mediaShareCode;
-        if (attributeKey.equals(Base64.encodeToString(raw.getBytes(), Base64.NO_WRAP))) {
-          ConnectionInfo connectionInfo =
-              new ConnectionInfo(serviceInfo.getHost(), serviceInfo.getPort());
-          if (callback != null) {
-            callback.onHostFound(connectionInfo);
+    resolver = new DiscoverResolver(context, NSD_SERVICE_TYPE, new DiscoverResolver.Listener() {
+      @Override public void onServicesChanged(Map<String, MDNSDiscover.Result> services) {
+        for (MDNSDiscover.Result result : services.values()) {
+          if (result.srv.fqdn.contains(NSD_SERVICE_NAME)) {
+            String attributeKey = result.txt.dict.get(NSD_ATTRIBUTE_KEY);
+            String raw = nsdKey + mediaShareCode;
+            if (attributeKey.equals(Base64.encodeToString(raw.getBytes(), Base64.NO_WRAP))) {
+              ConnectionInfo connectionInfo = new ConnectionInfo(result.a.ipaddr, result.srv.port);
+              if (callback != null) {
+                callback.onHostFound(connectionInfo);
+              }
+              resolver.stop();
+              return;
+            }
           }
         }
       }
-    };
-
-    discoveryListener = new NsdManager.DiscoveryListener() {
-      @Override public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-        Log.e(TAG, "[NsdUtils] - onStartDiscoveryFailed(), " + errorCode);
-        nsdManager.stopServiceDiscovery(this);
-      }
-
-      @Override public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-        Log.e(TAG, "[NsdUtils] - onStopDiscoveryFailed(), " + errorCode);
-        nsdManager.stopServiceDiscovery(this);
-      }
-
-      @Override public void onDiscoveryStarted(String serviceType) {
-        Log.d(TAG, "[NsdUtils] - onDiscoveryStarted(), " + serviceType);
-      }
-
-      @Override public void onDiscoveryStopped(String serviceType) {
-        Log.d(TAG, "[NsdUtils] - onDiscoveryStopped(), " + serviceType);
-      }
-
-      @Override public void onServiceFound(NsdServiceInfo serviceInfo) {
-        Log.d(TAG, "[NsdUtils] - onServiceFound()");
-        if (serviceInfo.getServiceName().contains(NSD_SERVICE_NAME)) {
-          nsdManager.resolveService(serviceInfo, resolveListener);
-        }
-      }
-
-      @Override public void onServiceLost(NsdServiceInfo serviceInfo) {
-
-      }
-    };
-    nsdManager.discoverServices(NSD_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+    });
+    resolver.start();
   }
 
   public void tearDown() {

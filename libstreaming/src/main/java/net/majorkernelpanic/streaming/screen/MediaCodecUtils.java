@@ -17,8 +17,8 @@ import java.security.InvalidParameterException;
 public class MediaCodecUtils {
 
   private static final String TAG = "MediaCodecUtils";
-  public static final int VIDEO_WIDTH = 1280;
-  public static final int VIDEO_HEIGHT = 720;
+  public static final int VIDEO_WIDTH = 720;
+  public static final int VIDEO_HEIGHT = 1280;
   private static final int SCREEN_DPI = 320;
   private static final int BIT_RATE = 1800000;
   private static final String VIDEO_MIME_TYPE = "video/avc";

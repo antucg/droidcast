@@ -29,11 +29,22 @@
         android:textAlignment="center"/>
     <Button
         android:id="@+id/home_connect_button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:padding="@dimen/activity_half_margin"
+        android:text="@string/home_connect_button"
+        style="@style/PrimaryButton"/>
+
+    <TextView
+        android:id="@+id/home_code_empty_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:padding="@dimen/activity_half_margin"
-        android:text="@string/home_connect_button"/>
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/home_code_not_empty"
+        android:visibility="invisible"/>
   </LinearLayout>
 
   <android.support.design.widget.FloatingActionButton
@@ -42,6 +53,9 @@
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
       android:layout_alignParentEnd="true"
+      android:layout_marginBottom="10dp"
+      android:layout_marginEnd="10dp"
+      android:layout_marginRight="10dp"
       android:src="@drawable/ic_media_route_off_holo_dark"
   />
 </RelativeLayout>

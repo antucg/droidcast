@@ -9,10 +9,10 @@ import lombok.Setter;
  */
 
 public class ConnectionInfo implements Model {
-  @Getter @Setter InetAddress host;
+  @Getter @Setter String host;
   @Getter @Setter int port;
 
-  public ConnectionInfo(InetAddress host, int port) {
+  public ConnectionInfo(String host, int port) {
     this.host = host;
     this.port = port;
   }

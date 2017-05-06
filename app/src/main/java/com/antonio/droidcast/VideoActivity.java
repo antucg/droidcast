@@ -51,6 +51,7 @@ public class VideoActivity extends BaseActivity
   }
 
   @Override public void surfaceCreated(SurfaceHolder holder) {
+    //openStream(null);
     nsdUtils.discoverNsdService(this, code, new NsdUtils.NsdResolveCallback() {
       @Override public void onHostFound(final ConnectionInfo connectionInfo) {
         Log.d(TAG, "[VideoActivity] - onHostFound()");
@@ -82,9 +83,18 @@ public class VideoActivity extends BaseActivity
     //    "Basic " + Base64.encodeToString(value.getBytes(), Base64.NO_WRAP));
 
     try {
-      mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(
-          "rtsp://" + MediaShareActivity.USERNAME + ":" + code + "@" + connectionInfo.getHost()
-              .getHostAddress() + ":" + connectionInfo.getPort()));
+      //mediaPlayer.setDataSource(getApplicationContext(),
+      //    Uri.parse("rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov"));
+      //mediaPlayer.setDataSource(getApplicationContext(),
+      //    Uri.parse("rtsp://192.168.1.10:7654/test2-rtsp"));
+      mediaPlayer.setDataSource(getApplicationContext(), Uri.parse("rtsp://"
+          + MediaShareActivity.USERNAME
+          + ":"
+          + code
+          + "@"
+          + connectionInfo.getHost()
+          + ":"
+          + connectionInfo.getPort()));
       mediaPlayer.setOnPreparedListener(this);
       mediaPlayer.prepareAsync();
     } catch (IOException e) {
@@ -95,6 +105,7 @@ public class VideoActivity extends BaseActivity
 
   @Override public void onPrepared(MediaPlayer mp) {
     Log.d(TAG, "[VideoActivity] - onPrepared()");
+    mediaPlayer.seekTo(0);
     mediaPlayer.start();
   }
 

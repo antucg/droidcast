@@ -219,7 +219,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(this)
             .setSmallIcon(R.drawable.notification_bar_icon)
-            //.setSmallIcon(R.drawable.ic_media_route_off_holo_light)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.manage_streaming))
             .addAction(R.drawable.ic_media_stop, getString(R.string.notification_stop),
@@ -272,6 +271,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   @Override public void onSessionStopped() {
     Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
+    nsdUtils.tearDown();
   }
 
   private void logError(final String msg) {

@@ -9,6 +9,7 @@
   <string name="home_welcome_message">Welcome to Droid Cast, enter code below to connect to another
     device or start streaming yourself.
   </string>
+  <string name="home_code_not_empty">Code can\'t be empty</string>
 
   <!-- Media Share activity -->
   <string name="label_permissions">Please enable Microphone permision.</string>
@@ -19,5 +20,11 @@
   <!-- Notification -->
   <string name="manage_streaming">Manage the streaming from this bar</string>
   <string name="notification_stop">Stop screen sharing</string>
+
+  <!-- Video activity -->
+  <string name="video_activity_looking_for_host">Looking for host</string>
+  <string name="video_activity_host_found">Host found</string>
+  <string name="video_activity_connecting">Establishing connection</string>
+  <string name="video_activity_connected">Connected!</string>
 
 </resources>

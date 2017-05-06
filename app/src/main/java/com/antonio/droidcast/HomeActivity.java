@@ -4,7 +4,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
+import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -17,6 +19,7 @@ public class HomeActivity extends BaseActivity {
 
   @Inject DaoFactory daoFactory;
   @BindView(R.id.home_code_editText) EditText codeEditText;
+  @BindView(R.id.home_code_empty_textview) TextView codeEmptyTextView;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -38,10 +41,34 @@ public class HomeActivity extends BaseActivity {
    */
   @OnClick(R.id.home_stream_button) public void startStreaming(View v) {
     startActivity(MediaShareActivity.createIntent(this));
-    //startActivity(TestActivity.createIntent(this));
   }
 
-  @OnClick(R.id.home_connect_button) public void onConnect(View v) {
-    startActivity(VideoActivity.createIntent(this, codeEditText.getText().toString()));
+  /**
+   * Handle connect action. Check that code is not empty.
+   *
+   * @param v Clicked button.
+   */
+  @OnClick(R.id.home_connect_button) public void onConnect(final View v) {
+    if (codeEditText.getText().length() < 6) {
+      v.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
+
+      codeEmptyTextView.getAnimation().cancel();
+      codeEmptyTextView.setAlpha(1f);
+      codeEmptyTextView.setVisibility(View.VISIBLE);
+      codeEmptyTextView.animate()
+          .setStartDelay(2000)
+          .alpha(0f)
+          .setDuration(500)
+          .withEndAction(new Runnable() {
+            @Override public void run() {
+              codeEmptyTextView.setVisibility(View.INVISIBLE);
+              codeEmptyTextView.setAlpha(1f);
+            }
+          });
+      return;
+    }
+    //startActivity(VideoActivity.createIntent(this, codeEditText.getText().toString()));
+    startActivity(VideoActivityVLC.createIntent(this, codeEditText.getText().toString()));
+    //startActivity(VideoActivityVLC.createIntentPath(this, "rtsp://192.168.1.10:7654/test2-rtsp"));
   }
 }

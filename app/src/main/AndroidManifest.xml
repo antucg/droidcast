@@ -34,7 +34,8 @@
 
     <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer"/>
 
-    <activity android:name=".TestActivity">
+    <activity android:name=".VideoActivityVLC"
+        android:theme="@style/AppTheme.NoActionBar">
     </activity>
   </application>
 

@@ -5,6 +5,7 @@ import com.antonio.droidcast.DroidCastApp;
 import com.antonio.droidcast.HomeActivity;
 import com.antonio.droidcast.MediaShareActivity;
 import com.antonio.droidcast.VideoActivity;
+import com.antonio.droidcast.VideoActivityVLC;
 import com.antonio.droidcast.utils.MetaDataProvider;
 import com.antonio.droidcast.utils.NsdUtils;
 import dagger.Component;
@@ -20,4 +21,5 @@ import javax.inject.Singleton;
   void inject(DroidCastApp droidCastApp);
   void inject (NsdUtils nsdUtils);
   void inject(MetaDataProvider metaDataProvider);
+  void inject(VideoActivityVLC videoActivityVLC);
 }
