@@ -1,5 +1,6 @@
 package com.antonio.droidcast;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,12 +15,14 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.ioc.IOCProvider;
+import com.antonio.droidcast.utils.NsdUtils;
 import javax.inject.Inject;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
 
 public class HomeActivity extends BaseActivity {
 
   @Inject DaoFactory daoFactory;
+  @Inject NsdUtils nsdUtils;
   @BindView(R.id.home_code_editText) EditText codeEditText;
   @BindView(R.id.home_code_empty_textview) TextView codeEmptyTextView;
 
@@ -84,5 +87,14 @@ public class HomeActivity extends BaseActivity {
     //startActivity(VideoActivity.createIntent(this, codeEditText.getText().toString()));
     startActivity(VideoActivityVLC.createIntent(this, codeEditText.getText().toString()));
     //startActivity(VideoActivityVLC.createIntentPath(this, "rtsp://192.168.1.10:7654/test2-rtsp"));
+  }
+
+  @Override protected void onDestroy() {
+    nsdUtils.tearDown();
+    stopService(new Intent(this, RtspServer.class));
+    NotificationManager notificationManager =
+        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    notificationManager.cancel(MediaShareActivity.NOTIFICATION_ID);
+    super.onDestroy();
   }
 }

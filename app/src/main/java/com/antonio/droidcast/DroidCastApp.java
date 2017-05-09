@@ -3,7 +3,6 @@ package com.antonio.droidcast;
 import android.app.Application;
 import com.antonio.droidcast.ioc.DroidCastComponent;
 import com.antonio.droidcast.ioc.IOCProvider;
-import javax.inject.Inject;
 
 /**
  * Main application class

@@ -37,9 +37,11 @@
     <activity
         android:name=".VideoActivityVLC"
         android:theme="@style/AppTheme.NoActionBar"/>
-
     <activity
         android:name=".SessionFinishActivity"
+        android:theme="@style/AppTheme.NoActionBar"/>
+    <activity
+        android:name=".StreamingStartedActivity"
         android:theme="@style/AppTheme.NoActionBar"/>
   </application>
 

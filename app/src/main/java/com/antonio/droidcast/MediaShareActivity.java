@@ -45,7 +45,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   private static final int REQUEST_CODE = 1000;
   public static final String USERNAME = "d";
-  private static final int NOTIFICATION_ID = 1;
+  public static final int NOTIFICATION_ID = 1;
   private static final String INTENT_KEY_STOP = "intent_key_stop";
 
   private MediaProjectionManager mProjectionManager;
@@ -56,11 +56,12 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private String code;
   private NotificationManager notificationManager;
 
+  private boolean isStreaming = false;
+
   @BindView(R.id.code_wrapper) LinearLayout codeWrapper;
   @BindView(R.id.media_share_code_textview) TextView mediaShareCodeTextView;
   @BindView(R.id.media_share_waiting_text) TextView mediaShareWaitingText;
   @BindView(R.id.media_share_progress) ProgressBar mediaShareProgressBar;
-  @BindView(R.id.media_share_client_connected) TextView mediaShareClientConnected;
 
   /**
    * Create an intent that opens this activity
@@ -257,12 +258,12 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   }
 
   @Override public void onSessionStarted() {
-    codeWrapper.postDelayed(new Runnable() {
-      @Override public void run() {
-        codeWrapper.setVisibility(View.GONE);
-        mediaShareClientConnected.setVisibility(View.VISIBLE);
-      }
-    }, 1000);
+    if (isStreaming) {
+      return;
+    }
+
+    isStreaming = true;
+    startActivity(StreamingStartedActivity.createIntent(this));
   }
 
   @Override public void onSessionStopped() {

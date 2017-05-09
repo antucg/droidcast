@@ -4,24 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorAccent"
+    android:background="@color/colorPrimary"
     android:padding="@dimen/activity_horizontal_margin"
     tools:context="com.antonio.droidcast.SessionFinishActivity">
 
   <TextView
-      android:id="@+id/session_finish_textview"
+      android:id="@+id/streaming_started_textview"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_centerInParent="true"
       android:alpha="0"
-      android:text="@string/session_finished"
+      android:text="@string/streaming_started"
       android:textAlignment="center"
       android:textColor="#fff"
       android:textSize="18sp"
       android:textStyle="bold"/>
 
   <TextView
-      android:id="@+id/session_finish_close_button"
+      android:id="@+id/streaming_started_close_button"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"

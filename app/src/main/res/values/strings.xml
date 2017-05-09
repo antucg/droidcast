@@ -15,7 +15,6 @@
   <string name="label_permissions">Please enable Microphone permision.</string>
   <string name="media_share_give_code">Give this code to the client:</string>
   <string name="waiting_for_client">Waiting for client …</string>
-  <string name="client_connected">Client connected</string>
 
   <!-- Notification -->
   <string name="manage_streaming">Manage the streaming from this bar</string>
@@ -30,5 +29,8 @@
   <!-- Session finished -->
   <string name="session_finished_close">Close</string>
   <string name="session_finished">Session has finished.</string>
+
+  <!-- Streaming started -->
+  <string name="streaming_started">Streaming has started, your screen is now visible by the client.</string>
 
 </resources>
