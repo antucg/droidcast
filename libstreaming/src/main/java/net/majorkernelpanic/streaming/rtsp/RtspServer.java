@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.majorkernelpanic.streaming.Session;
 import net.majorkernelpanic.streaming.SessionBuilder;
+import net.majorkernelpanic.streaming.screen.MediaCodecUtils;
 
 /**
  * Implementation of a subset of the RTSP protocol (RFC 2326).
@@ -197,6 +198,7 @@ public class RtspServer extends Service {
         }
       } catch (Exception e) {
       } finally {
+        MediaCodecUtils.getInstance().tearDown(true);
         mListenerThread = null;
       }
     }
@@ -343,7 +345,6 @@ public class RtspServer extends Service {
           break;
         } catch (IOException e) {
           Log.e(TAG, e.getMessage());
-          continue;
         }
       }
       Log.i(TAG, "RTSP server stopped !");
@@ -416,20 +417,24 @@ public class RtspServer extends Service {
 
         // We always send a response
         // The client will receive an "INTERNAL SERVER ERROR" if an exception has been thrown at some point
-        try {
-          response.send(mOutput);
-        } catch (IOException e) {
-          Log.e(TAG, "Response was not sent properly");
-          break;
+        if (response != null) {
+          try {
+            response.send(mOutput);
+          } catch (IOException e) {
+            Log.e(TAG, "Response was not sent properly");
+            break;
+          }
         }
       }
 
       // Streaming stops when client disconnects
+      //TODO: pass flag to syncStop to only release parameters if there are no more clients
       boolean streaming = isStreaming();
       mSession.syncStop();
       if (streaming && !isStreaming()) {
         postMessage(MESSAGE_STREAMING_STOPPED);
       }
+      // Call this release if there are no more clients
       mSession.release();
 
       try {
@@ -448,8 +453,8 @@ public class RtspServer extends Service {
         response.attributes = "WWW-Authenticate: Basic realm=\"" + SERVER_NAME + "\"\r\n";
         response.status = Response.STATUS_UNAUTHORIZED;
       } else {
-			    /* ********************************************************************************** */
-			    /* ********************************* Method DESCRIBE ******************************** */
+          /* ********************************************************************************** */
+          /* ********************************* Method DESCRIBE ******************************** */
 			    /* ********************************************************************************** */
         if (request.method.equalsIgnoreCase("DESCRIBE")) {
 

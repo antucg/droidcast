@@ -25,8 +25,6 @@ public class ScreenStream extends VideoStream implements SurfaceTexture.OnFrameA
 
   private MP4Config mConfig;
   private MediaProjection mediaProjection;
-  private Surface mediaCodecSurface;
-  private VirtualDisplay virtualDisplay;
   private DisplayMetrics displayMetrics;
 
   public ScreenStream(MediaProjection mediaProjection, DisplayMetrics displayMetrics) {
@@ -86,18 +84,19 @@ public class ScreenStream extends VideoStream implements SurfaceTexture.OnFrameA
 
   @Override protected void encodeWithMediaCodec() {
 
-    MediaCodecUtils mediaCodecUtils = new MediaCodecUtils();
+    MediaCodecUtils mediaCodecUtils = MediaCodecUtils.getInstance();
     try {
       mMediaCodec = mediaCodecUtils.buildMediaCodec();
     } catch (IOException e) {
-      releaseEncoders();
+      mediaCodecUtils.tearDown(false);
       return;
     }
 
-    mediaCodecSurface = mMediaCodec.createInputSurface();
-    mMediaCodec.start();
-    virtualDisplay =
-        mediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics);
+    if (!mediaCodecUtils.mediaObjectsAlreadySet()) {
+      Surface mediaCodecSurface = mediaCodecUtils.getMediaCodecSurface();
+      mMediaCodec.start();
+      mediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics);
+    }
 
     // The packetizer encapsulates the bit stream in an RTP stream and send it over the network
     mPacketizer.setInputStream(new MediaCodecInputStream(mMediaCodec));
@@ -106,30 +105,7 @@ public class ScreenStream extends VideoStream implements SurfaceTexture.OnFrameA
     mStreaming = true;
   }
 
-  private void releaseEncoders() {
-    Log.d(TAG, "[ScreenStream] - releaseEncoders()");
-    if (mMediaCodec != null) {
-      mMediaCodec.stop();
-      mMediaCodec.release();
-      mMediaCodec = null;
-    }
-    if (mediaCodecSurface != null) {
-      mediaCodecSurface.release();
-      mediaCodecSurface = null;
-    }
-    if (mediaProjection != null) {
-      mediaProjection.stop();
-      mediaProjection = null;
-    }
-    if (virtualDisplay != null) {
-      virtualDisplay.release();
-    }
-  }
-
   @Override public synchronized void stop() {
-    if (mStreaming) {
-      releaseEncoders();
-    }
     mStreaming = false;
   }
 

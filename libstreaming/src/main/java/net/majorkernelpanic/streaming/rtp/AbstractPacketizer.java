@@ -91,7 +91,6 @@ abstract public class AbstractPacketizer {
 
 	/** Updates data for RTCP SR and sends the packet. */
 	protected void send(int length) throws IOException {
-		System.out.println("### send");
 		socket.commitBuffer(length);
 	}
 

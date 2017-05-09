@@ -27,4 +27,8 @@
   <string name="video_activity_connecting">Establishing connection</string>
   <string name="video_activity_connected">Connected!</string>
 
+  <!-- Session finished -->
+  <string name="session_finished_close">Close</string>
+  <string name="session_finished">Session has finished.</string>
+
 </resources>

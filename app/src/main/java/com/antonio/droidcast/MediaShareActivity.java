@@ -9,15 +9,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.hardware.display.VirtualDisplay;
-import android.media.MediaCodec;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -28,7 +24,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Surface;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -38,14 +33,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.antonio.droidcast.ioc.IOCProvider;
 import com.antonio.droidcast.utils.NsdUtils;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Random;
 import javax.inject.Inject;
 import net.majorkernelpanic.streaming.Session;
 import net.majorkernelpanic.streaming.SessionBuilder;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
-import net.majorkernelpanic.streaming.screen.MediaCodecUtils;
 
 public class MediaShareActivity extends BaseActivity implements Session.Callback {
 
@@ -62,6 +54,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private RtspServer rtspServerService;
   private boolean bound = false;
   private String code;
+  private NotificationManager notificationManager;
 
   @BindView(R.id.code_wrapper) LinearLayout codeWrapper;
   @BindView(R.id.media_share_code_textview) TextView mediaShareCodeTextView;
@@ -106,7 +99,10 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     if (intent.getBooleanExtra(INTENT_KEY_STOP, false)) {
+      nsdUtils.tearDown();
       stopService(new Intent(this, RtspServer.class));
+      notificationManager.cancel(NOTIFICATION_ID);
+      startActivity(SessionFinishActivity.createIntent(this));
     }
   }
 
@@ -217,10 +213,11 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
             PendingIntent.FLAG_ONE_SHOT);
 
     NotificationCompat.Builder mBuilder =
-        new NotificationCompat.Builder(this)
-            .setSmallIcon(R.drawable.notification_bar_icon)
+        new NotificationCompat.Builder(this).setSmallIcon(R.drawable.notification_bar_icon)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.manage_streaming))
+            .setAutoCancel(false)
+            .setOngoing(true)
             .addAction(R.drawable.ic_media_stop, getString(R.string.notification_stop),
                 stopPendingIntent);
     Intent resultIntent = MediaShareActivity.createIntent(this);
@@ -230,9 +227,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     PendingIntent resultPendingIntent =
         stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
     mBuilder.setContentIntent(resultPendingIntent);
-    NotificationManager mNotificationManager =
-        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
   }
 
   @Override protected void onStop() {
@@ -271,7 +267,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   @Override public void onSessionStopped() {
     Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
-    nsdUtils.tearDown();
   }
 
   private void logError(final String msg) {

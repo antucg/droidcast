@@ -156,7 +156,6 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
       ts = ((MediaCodecInputStream) is).getLastBufferInfo().presentationTimeUs * 1000L;
       //ts += delay;
       naluLength = is.available() + 1;
-      System.out.println("naluLength " + naluLength);
       if (!(header[0] == 0 && header[1] == 0 && header[2] == 0)) {
         // Turns out, the NAL units are not preceeded with 0x00000001
         Log.e(TAG, "NAL units are not preceeded by 0x00000001");
@@ -174,7 +173,6 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
 
     // Parses the NAL unit type
     type = header[4] & 0x1F;
-    System.out.println("type: " + type);
     // The stream already contains NAL unit type 7 or 8, we don't need
     // to add them to the stream ourselves
     if (type == 7 || type == 8) {

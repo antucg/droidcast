@@ -68,7 +68,7 @@ class H264Parameters {
       return new MP4Config(b64SPS, b64PPS);
     }
 
-    MediaCodecUtils mediaCodecUtils = new MediaCodecUtils();
+    MediaCodecUtils mediaCodecUtils = MediaCodecUtils.getInstance();
 
     try {
       mediaCodec = mediaCodecUtils.buildMediaCodec();
@@ -78,7 +78,7 @@ class H264Parameters {
       return null;
     }
 
-    mediaCodecSurface = mediaCodec.createInputSurface();
+    mediaCodecSurface = mediaCodecUtils.getMediaCodecSurface();
     mediaCodec.start();
     virtualDisplay =
         mediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics);
@@ -159,19 +159,20 @@ class H264Parameters {
   }
 
   private void releaseEncoders() {
-    if (mediaCodec != null) {
-      mediaCodec.stop();
-      mediaCodec.release();
-      mediaCodec = null;
-    }
-    if (virtualDisplay != null) {
-      virtualDisplay.release();
-      virtualDisplay = null;
-    }
-    if (mediaCodecSurface != null) {
-      mediaCodecSurface.release();
-      mediaCodecSurface = null;
-    }
+    MediaCodecUtils.getInstance().tearDown(false);
+    //if (mediaCodec != null) {
+    //  mediaCodec.stop();
+    //  mediaCodec.release();
+    //  mediaCodec = null;
+    //}
+    //if (virtualDisplay != null) {
+    //  virtualDisplay.release();
+    //  virtualDisplay = null;
+    //}
+    //if (mediaCodecSurface != null) {
+    //  mediaCodecSurface.release();
+    //  mediaCodecSurface = null;
+    //}
   }
 
   private boolean  checkTestNeeded() {

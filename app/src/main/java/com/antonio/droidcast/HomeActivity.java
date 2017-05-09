@@ -1,5 +1,7 @@
 package com.antonio.droidcast;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -20,6 +22,18 @@ public class HomeActivity extends BaseActivity {
   @Inject DaoFactory daoFactory;
   @BindView(R.id.home_code_editText) EditText codeEditText;
   @BindView(R.id.home_code_empty_textview) TextView codeEmptyTextView;
+
+  /**
+   * Create an intent that opens this activity
+   *
+   * @param context Activity that opens this one.
+   * @return Intent
+   */
+  public static Intent createIntent(Context context) {
+    Intent intent = new Intent(context, HomeActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    return intent;
+  }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);

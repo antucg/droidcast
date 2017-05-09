@@ -77,7 +77,7 @@ public class NsdUtils {
       }
 
       @Override public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-        nsdManager.unregisterService(registrationListener);
+        Log.d(TAG, "[NsdUtils] - onServiceUnregistered");
       }
     };
 

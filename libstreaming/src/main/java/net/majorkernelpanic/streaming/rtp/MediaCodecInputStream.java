@@ -72,7 +72,6 @@ import java.nio.ByteBuffer;
               throw new RuntimeException("couldn't fetch buffer at index " + mIndex);
             }
             mBuffer.position(0);
-            Log.v(TAG, "Buffer available");
             break;
           } else if (mIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
             mMediaFormat = mMediaCodec.getOutputFormat();
@@ -88,7 +87,6 @@ import java.nio.ByteBuffer;
           : mBufferInfo.size - mBuffer.position();
       mBuffer.get(buffer, offset, min);
       if (mBuffer.position() >= mBufferInfo.size) {
-        System.out.println("### release output buffer");
         mMediaCodec.releaseOutputBuffer(mIndex, false);
         mBuffer = null;
       }
