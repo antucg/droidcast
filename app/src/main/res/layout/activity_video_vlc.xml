@@ -7,10 +7,16 @@
     android:orientation="vertical"
     tools:context=".VideoActivityVLC">
 
-  <SurfaceView
-      android:id="@+id/surface"
+  <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
+      android:layout_height="match_parent"
+      android:background="@color/primary_light"
+      android:padding="4dp">
+    <SurfaceView
+        android:id="@+id/surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+  </RelativeLayout>
 
   <RelativeLayout
       android:id="@+id/loading_overlay"

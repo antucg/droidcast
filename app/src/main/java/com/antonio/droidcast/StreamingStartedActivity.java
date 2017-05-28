@@ -8,6 +8,7 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.antonio.droidcast.utils.BounceView;
 import com.antonio.droidcast.utils.Units;
 
 public class StreamingStartedActivity extends BaseActivity {
@@ -16,6 +17,7 @@ public class StreamingStartedActivity extends BaseActivity {
 
   /**
    * Creates an intent that opens this activity.
+   *
    * @param context Application context.
    * @return Intent.
    */
@@ -43,6 +45,10 @@ public class StreamingStartedActivity extends BaseActivity {
    * @param view Clicked view.
    */
   @OnClick(R.id.streaming_started_close_button) public void onCloseClick(View view) {
-    this.moveTaskToBack(true);
+    BounceView.animate(view, new Runnable() {
+      @Override public void run() {
+        StreamingStartedActivity.this.moveTaskToBack(true);
+      }
+    });
   }
 }

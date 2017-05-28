@@ -42,8 +42,12 @@ dependencies {
   //  compile 'com.writingminds:FFmpegAndroid:0.3.2'
   compile project(':libstreaming')
 
-  compile "de.mrmaffen:vlc-android-sdk:2.0.6"
+//  compile "de.mrmaffen:vlc-android-sdk:2.0.6"
+  compile project(':libvlc')
   compile 'com.youview:tinydnssd:1.2.7'
+//  compile 'com.aaronhan:rtspclient:0.7'
+//  compile project(':rtspclient')
+
 
   //  Test
   testCompile 'junit:junit:4.12'

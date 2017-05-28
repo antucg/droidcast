@@ -51,7 +51,7 @@ public class NsdUtils {
 
   public void registerNsdService(Activity activity, String mediaShareCode) {
     //int port = getAvailablePort();
-    int port = 1234;
+    int port = 55640;
 
     //if (port == 0) {
     //  return;

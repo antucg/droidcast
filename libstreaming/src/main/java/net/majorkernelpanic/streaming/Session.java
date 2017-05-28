@@ -321,6 +321,7 @@ public class Session {
 		sessionDescription.append("v=0\r\n");
 		// TODO: Add IPV6 support
 		sessionDescription.append("o=- "+mTimestamp+" "+mTimestamp+" IN IP4 "+mOrigin+"\r\n");
+		//sessionDescription.append("o=- "+mTimestamp+" "+mTimestamp+" IN IP4 "+mOrigin+"\r\n");
 		sessionDescription.append("s=Unnamed\r\n");
 		sessionDescription.append("i=N/A\r\n");
 		sessionDescription.append("c=IN IP4 "+mDestination+"\r\n");

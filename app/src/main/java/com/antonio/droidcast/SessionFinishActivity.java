@@ -8,6 +8,7 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.antonio.droidcast.utils.BounceView;
 import com.antonio.droidcast.utils.Units;
 
 public class SessionFinishActivity extends BaseActivity {
@@ -44,6 +45,10 @@ public class SessionFinishActivity extends BaseActivity {
    * @param view Clicked view.
    */
   @OnClick(R.id.session_finish_close_button) public void onCloseClick(View view) {
-    startActivity(HomeActivity.createIntent(this));
+    BounceView.animate(view, new Runnable() {
+      @Override public void run() {
+        startActivity(HomeActivity.createIntent(SessionFinishActivity.this));
+      }
+    });
   }
 }

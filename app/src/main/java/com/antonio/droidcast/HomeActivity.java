@@ -45,9 +45,9 @@ public class HomeActivity extends BaseActivity {
     ButterKnife.bind(this);
     IOCProvider.getInstance().inject(this);
 
-    // Sets the port of the RTSP server to 1234
+    // Sets the port of the RTSP server to 55640
     SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    editor.putString(RtspServer.KEY_PORT, String.valueOf(1234));
+    editor.putString(RtspServer.KEY_PORT, String.valueOf(55640));
     editor.apply();
   }
 
@@ -84,9 +84,9 @@ public class HomeActivity extends BaseActivity {
           });
       return;
     }
-    //startActivity(VideoActivity.createIntent(this, codeEditText.getText().toString()));
-    startActivity(VideoActivityVLC.createIntent(this, codeEditText.getText().toString()));
-    //startActivity(VideoActivityVLC.createIntentPath(this, "rtsp://192.168.1.10:7654/test2-rtsp"));
+    startActivity(VideoActivityVLC.createIntent(HomeActivity.this, codeEditText.getText().toString()));
+    //startActivity(VideoActivityVLC.createIntentPath(HomeActivity.this,
+    //    "rtsp://192.168.1.10:7654/test2-rtsp"));
   }
 
   @Override protected void onDestroy() {

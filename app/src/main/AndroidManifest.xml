@@ -28,20 +28,20 @@
     <activity
         android:name=".MediaShareActivity"
         android:configChanges="orientation|keyboardHidden|screenSize"/>
-    <activity
-        android:name=".VideoActivity"
-        android:configChanges="orientation|keyboardHidden|screenSize"/>
 
     <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer"/>
 
     <activity
         android:name=".VideoActivityVLC"
+        android:configChanges="orientation|keyboardHidden|screenSize"
         android:theme="@style/AppTheme.NoActionBar"/>
     <activity
         android:name=".SessionFinishActivity"
+        android:configChanges="orientation|keyboardHidden|screenSize"
         android:theme="@style/AppTheme.NoActionBar"/>
     <activity
         android:name=".StreamingStartedActivity"
+        android:configChanges="orientation|keyboardHidden|screenSize"
         android:theme="@style/AppTheme.NoActionBar"/>
   </application>
 

@@ -5,6 +5,7 @@
       <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/DroidCast.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/DroidCast.iml" />
       <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/app/app.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/app/app.iml" />
       <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming/libstreaming.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming/libstreaming.iml" />
+      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/libvlc/libvlc.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/libvlc/libvlc.iml" />
     </modules>
   </component>
 </project>
