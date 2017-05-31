@@ -12,10 +12,19 @@
       android:layout_height="match_parent"
       android:background="@color/primary_light"
       android:padding="4dp">
-    <SurfaceView
-        android:id="@+id/surface"
+    <FrameLayout
+        android:id="@+id/video_surface_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:foregroundGravity="clip_horizontal|clip_vertical"
+        android:background="#00f"
+        tools:ignore="true">
+      <SurfaceView
+          android:id="@+id/surface"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"/>
+    </FrameLayout>
   </RelativeLayout>
 
   <RelativeLayout
