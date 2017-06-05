@@ -45,14 +45,14 @@ public class OrientantionListener {
     return instance;
   }
 
-  public void addListener(OnOrientationChange cb) {
+  void addListener(OnOrientationChange cb) {
     if (callbackList.isEmpty()) {
       orientationEventListener.enable();
     }
     callbackList.add(cb);
   }
 
-  public void removeListener(OnOrientationChange cb) {
+  void removeListener(OnOrientationChange cb) {
     callbackList.remove(cb);
     if (callbackList.isEmpty()) {
       orientationEventListener.disable();

@@ -30,7 +30,7 @@ public class MediaCodecUtils {
    *
    * @return MediaCodec
    */
-  public static MediaCodec buildMediaCodec(int orientation) throws IOException {
+  static MediaCodec buildMediaCodec(int orientation) throws IOException {
 
     int width = orientation == Configuration.ORIENTATION_PORTRAIT ? VIDEO_WIDTH : VIDEO_HEIGHT;
     int height = orientation == Configuration.ORIENTATION_PORTRAIT ? VIDEO_HEIGHT : VIDEO_WIDTH;
@@ -61,7 +61,7 @@ public class MediaCodecUtils {
    * @param orientation Current orientation of the device.
    * @return VirualDisplay instance.
    */
-  public static VirtualDisplay buildVirtualDisplay(MediaProjection mediaProjection,
+  static VirtualDisplay buildVirtualDisplay(MediaProjection mediaProjection,
       Surface mediaCodecSurface, DisplayMetrics displayMetrics, int orientation) {
 
     if (mediaProjection == null || mediaCodecSurface == null || displayMetrics == null) {

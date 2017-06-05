@@ -3,6 +3,7 @@ package net.majorkernelpanic.streaming.screen;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.VirtualDisplay;
+import android.media.MediaCodec;
 import android.media.MediaRecorder;
 import android.media.projection.MediaProjection;
 import android.util.Base64;
@@ -24,8 +25,8 @@ public class ScreenStream extends VideoStream {
   public final static String TAG = "ScreenStream";
 
   private Context context;
-  private MP4Config mConfigPortrait;
-  private MP4Config mConfigLandscape;
+  private MP4Config mConfigPortrait = null;
+  private MP4Config mConfigLandscape = null;
   private MediaProjection mediaProjection;
   private DisplayMetrics displayMetrics;
   private VirtualDisplay virtualDisplay;
@@ -64,7 +65,7 @@ public class ScreenStream extends VideoStream {
    * Returns a description of the stream using SDP. It can then be included in an SDP file.
    */
   public synchronized String getSessionDescription() throws IllegalStateException {
-    if (mConfigPortrait == null) {
+    if (mConfigPortrait == null || mConfigLandscape == null) {
       throw new IllegalStateException("You need to call configure() first !");
     }
     return "m=video "
@@ -140,32 +141,49 @@ public class ScreenStream extends VideoStream {
   private void startScreenOrientationListener() {
     onOrientationChange = new OrientantionListener.OnOrientationChange() {
       @Override public void newOrientation(int orientation) {
-        mPacketizer.stop();
-        setStreamParameters();
-        mMediaCodec.stop();
-        mMediaCodec.release();
+        MediaCodec rotatedMediaCodec;
         try {
-          mMediaCodec = MediaCodecUtils.buildMediaCodec(orientation);
+          rotatedMediaCodec = MediaCodecUtils.buildMediaCodec(orientation);
         } catch (IOException e) {
           releaseEncoders();
           Log.e(TAG, "[ScreenStream] - OrientantionListener(), error creating MediaCodec");
           return;
         }
-        mediaCodecSurface = mMediaCodec.createInputSurface();
-        mMediaCodec.start();
-        int width =
-            orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_WIDTH
-                : MediaCodecUtils.VIDEO_HEIGHT;
-        int height =
-            orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_HEIGHT
-                : MediaCodecUtils.VIDEO_WIDTH;
-        int density = MediaCodecUtils.SCREEN_DPI;
-        virtualDisplay.resize(width, height, density);
-        virtualDisplay.setSurface(mediaCodecSurface);
+        Surface rotatedSurface = rotatedMediaCodec.createInputSurface();
+        rotatedMediaCodec.start();
+        //int width =
+        //    orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_WIDTH
+        //        : MediaCodecUtils.VIDEO_HEIGHT;
+        //int height =
+        //    orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_HEIGHT
+        //        : MediaCodecUtils.VIDEO_WIDTH;
+        //int density = MediaCodecUtils.SCREEN_DPI;
+
+        VirtualDisplay rotatedVirtualDisplay = MediaCodecUtils.buildVirtualDisplay(mediaProjection, rotatedSurface, displayMetrics, orientation);
+        mPacketizer.stop();
+        setStreamParameters();
+        mPacketizer.setInputStream(new MediaCodecInputStream(rotatedMediaCodec));
+        mPacketizer.start();
+
+        releaseEncoders();
+        mMediaCodec = rotatedMediaCodec;
+        mediaCodecSurface = rotatedSurface;
+        virtualDisplay = rotatedVirtualDisplay;
+        //mPacketizer.stop();
+
+        //mMediaCodec.stop();
+
+        //virtualDisplay.resize(width, height, density);
+        //virtualDisplay.setSurface(rotatedSurface);
 
         // The packetizer encapsulates the bit stream in an RTP stream and send it over the network
-        mPacketizer.setInputStream(new MediaCodecInputStream(mMediaCodec));
-        mPacketizer.start();
+        //mPacketizer.setInputStream(new MediaCodecInputStream(rotatedMediaCodec));
+        //mPacketizer.start();
+
+        //mMediaCodec.release();
+        //mediaCodecSurface.release();
+        //mMediaCodec = rotatedMediaCodec;
+        //mediaCodecSurface = rotatedSurface;
       }
     };
 

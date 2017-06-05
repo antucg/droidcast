@@ -240,7 +240,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
   private static final int SURFACE_16_9 = 3;
   private static final int SURFACE_4_3 = 4;
   private static final int SURFACE_ORIGINAL = 5;
-  private static int CURRENT_SIZE = SURFACE_16_9;
+  private static int CURRENT_SIZE = SURFACE_BEST_FIT;
 
   private final Handler mHandler = new Handler();
   private View.OnLayoutChangeListener mOnLayoutChangeListener = null;
@@ -498,18 +498,6 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1) @Override
   public void onNewVideoLayout(IVLCVout vlcVout, int width, int height, int visibleWidth,
       int visibleHeight, int sarNum, int sarDen) {
-    Log.d(TAG, "### "
-        + width
-        + " "
-        + height
-        + " "
-        + visibleWidth
-        + " "
-        + visibleHeight
-        + " "
-        + sarNum
-        + " "
-        + sarNum);
     mVideoWidth = width;
     mVideoHeight = height;
     mVideoVisibleWidth = visibleWidth;
