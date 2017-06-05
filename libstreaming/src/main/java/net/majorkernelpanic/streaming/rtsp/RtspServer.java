@@ -198,7 +198,6 @@ public class RtspServer extends Service {
         }
       } catch (Exception e) {
       } finally {
-        MediaCodecUtils.getInstance().tearDown(true);
         mListenerThread = null;
       }
     }
@@ -397,7 +396,6 @@ public class RtspServer extends Service {
           // Client has left
           break;
         } catch (Exception e) {
-          Log.d(TAG, "### bad request");
           // We don't understand the request :/
           response = new Response();
           response.status = Response.STATUS_BAD_REQUEST;

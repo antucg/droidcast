@@ -1,6 +1,7 @@
 package net.majorkernelpanic.streaming.screen;
 
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.hardware.display.VirtualDisplay;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
@@ -45,14 +46,18 @@ class H264Parameters {
   private String b64SPS;
   private int videoWidth;
   private int videoHeight;
+  private int orientation;
 
   H264Parameters(MediaProjection mediaProjection, DisplayMetrics displayMetrics,
-      SharedPreferences sharedPreferences) {
+      SharedPreferences sharedPreferences, int orientation) {
     this.mediaProjection = mediaProjection;
     this.displayMetrics = displayMetrics;
     this.sharedPreferences = sharedPreferences;
-    videoWidth = MediaCodecUtils.VIDEO_WIDTH;
-    videoHeight = MediaCodecUtils.VIDEO_HEIGHT;
+    this.orientation = orientation;
+    videoWidth = orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_WIDTH
+        : MediaCodecUtils.VIDEO_HEIGHT;
+    videoHeight = orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_HEIGHT
+        : MediaCodecUtils.VIDEO_WIDTH;
   }
 
   MP4Config getConfig() throws ConfNotSupportedException {
@@ -68,20 +73,19 @@ class H264Parameters {
       return new MP4Config(b64SPS, b64PPS);
     }
 
-    MediaCodecUtils mediaCodecUtils = MediaCodecUtils.getInstance();
-
     try {
-      mediaCodec = mediaCodecUtils.buildMediaCodec();
+      mediaCodec = MediaCodecUtils.buildMediaCodec(orientation);
     } catch (IOException e) {
       releaseEncoders();
       saveTestResult(false);
       return null;
     }
 
-    mediaCodecSurface = mediaCodecUtils.getMediaCodecSurface();
+    mediaCodecSurface = mediaCodec.createInputSurface();
     mediaCodec.start();
     virtualDisplay =
-        mediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics);
+        MediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics,
+            orientation);
     drainEncoder();
     return new MP4Config(b64SPS, b64PPS);
   }
@@ -99,7 +103,7 @@ class H264Parameters {
 
       int bufferIndex = mediaCodec.dequeueOutputBuffer(info, 0);
       if (bufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-        // The PPS and PPS shoud be there
+        // The PPS and PPS should be there
         MediaFormat format = mediaCodec.getOutputFormat();
         ByteBuffer spsb = format.getByteBuffer("csd-0");
         ByteBuffer ppsb = format.getByteBuffer("csd-1");
@@ -159,23 +163,22 @@ class H264Parameters {
   }
 
   private void releaseEncoders() {
-    MediaCodecUtils.getInstance().tearDown(false);
-    //if (mediaCodec != null) {
-    //  mediaCodec.stop();
-    //  mediaCodec.release();
-    //  mediaCodec = null;
-    //}
-    //if (virtualDisplay != null) {
-    //  virtualDisplay.release();
-    //  virtualDisplay = null;
-    //}
-    //if (mediaCodecSurface != null) {
-    //  mediaCodecSurface.release();
-    //  mediaCodecSurface = null;
-    //}
+    if (mediaCodec != null) {
+      mediaCodec.stop();
+      mediaCodec.release();
+      mediaCodec = null;
+    }
+    if (virtualDisplay != null) {
+      virtualDisplay.release();
+      virtualDisplay = null;
+    }
+    if (mediaCodecSurface != null) {
+      mediaCodecSurface.release();
+      mediaCodecSurface = null;
+    }
   }
 
-  private boolean  checkTestNeeded() {
+  private boolean checkTestNeeded() {
     // Forces the test
     if (sharedPreferences == null) {
       return true;

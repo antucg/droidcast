@@ -231,6 +231,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
 
   // display surface
   @BindView(R.id.surface) SurfaceView mVideoSurface;
+  private SurfaceHolder holder;
 
   private String SAMPLE_URL;
   private static final int SURFACE_BEST_FIT = 0;
@@ -239,7 +240,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
   private static final int SURFACE_16_9 = 3;
   private static final int SURFACE_4_3 = 4;
   private static final int SURFACE_ORIGINAL = 5;
-  private static int CURRENT_SIZE = SURFACE_BEST_FIT;
+  private static int CURRENT_SIZE = SURFACE_16_9;
 
   private final Handler mHandler = new Handler();
   private View.OnLayoutChangeListener mOnLayoutChangeListener = null;
@@ -260,6 +261,8 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     IOCProvider.getInstance().inject(this);
     ButterKnife.bind(this);
 
+    holder = mVideoSurface.getHolder();
+
     updateStatusTextView(getString(R.string.video_activity_looking_for_host));
     code = getIntent().getStringExtra(CODE_KEY);
     path = getIntent().getStringExtra(PATH_KEY);
@@ -270,7 +273,6 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
 
     final ArrayList<String> args = new ArrayList<>();
     args.add("-vvv");
-    args.add("--help");
     mLibVLC = new LibVLC(this, args);
     mMediaPlayer = new MediaPlayer(mLibVLC);
   }
@@ -496,7 +498,18 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1) @Override
   public void onNewVideoLayout(IVLCVout vlcVout, int width, int height, int visibleWidth,
       int visibleHeight, int sarNum, int sarDen) {
-    Log.d(TAG, "### "+ width + " " + height + " " + visibleWidth + " " + visibleHeight + " " + sarNum + " " + sarNum);
+    Log.d(TAG, "### "
+        + width
+        + " "
+        + height
+        + " "
+        + visibleWidth
+        + " "
+        + visibleHeight
+        + " "
+        + sarNum
+        + " "
+        + sarNum);
     mVideoWidth = width;
     mVideoHeight = height;
     mVideoVisibleWidth = visibleWidth;

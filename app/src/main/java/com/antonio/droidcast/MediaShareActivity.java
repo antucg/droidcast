@@ -93,13 +93,16 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     askForPermission();
     Random rnd = new Random();
-    code = Integer.toString(100000 + rnd.nextInt(900000));
+    //code = Integer.toString(100000 + rnd.nextInt(900000));
+    code = "1";
     mediaShareCodeTextView.setText(code);
   }
 
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     if (intent.getBooleanExtra(INTENT_KEY_STOP, false)) {
+      mMediaProjection.stop();
+      mMediaProjection = null;
       nsdUtils.tearDown();
       stopService(new Intent(this, RtspServer.class));
       notificationManager.cancel(NOTIFICATION_ID);

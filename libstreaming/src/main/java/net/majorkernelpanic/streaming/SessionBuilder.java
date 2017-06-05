@@ -145,7 +145,7 @@ public class SessionBuilder {
         session.addVideoTrack(stream);
         break;
       case SCREEN_H264:
-        ScreenStream screenStream = new ScreenStream(mediaProjection, displayMetrics);
+        ScreenStream screenStream = new ScreenStream(mContext, mediaProjection, displayMetrics);
         if (mContext != null) {
           screenStream.setPreferences(PreferenceManager.getDefaultSharedPreferences(mContext));
         }
