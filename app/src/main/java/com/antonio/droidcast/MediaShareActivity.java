@@ -106,7 +106,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
       nsdUtils.tearDown();
       stopService(new Intent(this, RtspServer.class));
       notificationManager.cancel(NOTIFICATION_ID);
-      startActivity(SessionFinishActivity.createIntent(this));
+      startActivity(SessionFinishActivity.createIntent(this, false));
     }
   }
 

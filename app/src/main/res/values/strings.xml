@@ -29,6 +29,7 @@
   <!-- Session finished -->
   <string name="session_finished_close">Close</string>
   <string name="session_finished">Session has finished.</string>
+  <string name="session_finished_by_server">Session has been finished by the server.</string>
 
   <!-- Streaming started -->
   <string name="streaming_started">Streaming has started, your screen is now visible by the client.</string>

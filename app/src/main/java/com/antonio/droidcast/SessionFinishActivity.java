@@ -3,6 +3,7 @@ package com.antonio.droidcast;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -13,6 +14,7 @@ import com.antonio.droidcast.utils.Units;
 
 public class SessionFinishActivity extends BaseActivity {
 
+  private final static String FINISHED_BY_CLIENT_KEY = "finished_by_client_key";
   @BindView(R.id.session_finish_textview) TextView sessionFinishTextView;
 
   /**
@@ -21,8 +23,10 @@ public class SessionFinishActivity extends BaseActivity {
    * @param context Activity that opens this one.
    * @return Intent
    */
-  public static Intent createIntent(Context context) {
-    return new Intent(context, SessionFinishActivity.class);
+  public static Intent createIntent(Context context, boolean finishByServer) {
+    Intent intent = new Intent(context, SessionFinishActivity.class);
+    intent.putExtra(FINISHED_BY_CLIENT_KEY, finishByServer);
+    return intent;
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,10 @@ public class SessionFinishActivity extends BaseActivity {
     setContentView(R.layout.activity_session_finish);
 
     ButterKnife.bind(this);
+
+    if (getIntent().getBooleanExtra(FINISHED_BY_CLIENT_KEY, false)) {
+      sessionFinishTextView.setText(getString(R.string.session_finished_by_server));
+    }
 
     sessionFinishTextView.postDelayed(new Runnable() {
       @Override public void run() {
@@ -50,5 +58,13 @@ public class SessionFinishActivity extends BaseActivity {
         startActivity(HomeActivity.createIntent(SessionFinishActivity.this));
       }
     });
+  }
+
+  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      startActivity(HomeActivity.createIntent(SessionFinishActivity.this));
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
   }
 }

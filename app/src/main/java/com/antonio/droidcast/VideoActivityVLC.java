@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +21,7 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.antonio.droidcast.ioc.IOCProvider;
+import com.antonio.droidcast.models.ConnectionInfo;
 import com.antonio.droidcast.utils.NsdUtils;
 import com.antonio.droidcast.utils.Units;
 import java.util.ArrayList;
@@ -32,190 +32,6 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
 public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVideoLayoutListener {
-
-  public static Intent createIntent(Context context, String code) {
-    Intent intent = new Intent(context, VideoActivityVLC.class);
-    intent.putExtra(CODE_KEY, code);
-    return intent;
-  }
-
-  public static Intent createIntentPath(Context context, String path) {
-    Intent intent = new Intent(context, VideoActivityVLC.class);
-    intent.putExtra(PATH_KEY, path);
-    return intent;
-  }
-
-  /*************
-   * Activity
-   *************/
-
-  //@Override public void onCreate(Bundle savedInstanceState) {
-  //  super.onCreate(savedInstanceState);
-  //  setContentView(R.layout.activity_video_vlc);
-  //
-  //  IOCProvider.getInstance().inject(this);
-  //  ButterKnife.bind(this);
-  //
-  //  updateStatusTextView(getString(R.string.video_activity_looking_for_host));
-  //
-  //  holder = mSurface.getHolder();
-  //
-  //  code = getIntent().getStringExtra(CODE_KEY);
-  //  path = getIntent().getStringExtra(PATH_KEY);
-  //  ViewDimensions.getDimension(parentView, new ViewDimensions.OnDimensionReady() {
-  //    @Override public void onDimension(int width, int heigth) {
-  //      int frameWidth = Math.round(Units.dpToPixel(VideoActivityVLC.this, 4));
-  //      availableWidth = width - frameWidth;
-  //      availableHeight = heigth - frameWidth;
-  //      //setSize(videoWidth, videoHeight);
-  //      holder.addCallback(VideoActivityVLC.this);
-  //    }
-  //  });
-  //}
-  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (keyCode == KeyEvent.KEYCODE_BACK) {
-      confirmLeave();
-      return true;
-    }
-    return super.onKeyDown(keyCode, event);
-  }
-
-  private void confirmLeave() {
-    AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-    alertDialog.setTitle("Stop streaming");
-    alertDialog.setMessage("Do you want to finish this session?");
-    alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-        new DialogInterface.OnClickListener() {
-          public void onClick(DialogInterface dialog, int which) {
-            //releasePlayer();
-            mMediaPlayer.release();
-            mLibVLC.release();
-            startActivity(SessionFinishActivity.createIntent(VideoActivityVLC.this));
-            finish();
-          }
-        });
-    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
-        new DialogInterface.OnClickListener() {
-          @Override public void onClick(DialogInterface dialog, int which) {
-            //  Do nothing
-          }
-        });
-    alertDialog.show();
-  }
-
-  /*************
-   * Events
-   *************/
-
-  //@Override public void surfaceCreated(SurfaceHolder holder) {
-  //  if (path != null) {
-  //    createPlayer(null);
-  //    return;
-  //  }
-  //  nsdUtils.discoverNsdService(this, code, new NsdUtils.NsdResolveCallback() {
-  //    @Override public void onHostFound(final ConnectionInfo connectionInfo) {
-  //      VideoActivityVLC.this.connectionInfo = connectionInfo;
-  //      Log.d(TAG, "[VideoActivityVLC] - onHostFound()");
-  //      VideoActivityVLC.this.runOnUiThread(new Runnable() {
-  //        @Override public void run() {
-  //          updateStatusTextView(getString(R.string.video_activity_host_found));
-  //          loadingOverlay.postDelayed(new Runnable() {
-  //            @Override public void run() {
-  //              updateStatusTextView(getString(R.string.video_activity_connecting));
-  //            }
-  //          }, 1000);
-  //          createPlayer(connectionInfo);
-  //        }
-  //      });
-  //    }
-  //
-  //    @Override public void onError() {
-  //      Log.e(TAG, "[VideoActivityVLC] - error");
-  //    }
-  //  });
-  //}
-  //
-  //@Override public void onSurfacesCreated(IVLCVout vout) {
-  //  Media m = new Media(libvlc, Uri.parse(connectionInfo != null ? "rtsp://"
-  //      + MediaShareActivity.USERNAME
-  //      + ":"
-  //      + code
-  //      + "@"
-  //      + connectionInfo.getHost()
-  //      + ":"
-  //      + connectionInfo.getPort() : path));
-  //  mMediaPlayer.setMedia(m);
-  //  mMediaPlayer.play();
-  //
-  //  if (mOnLayoutChangeListener == null) {
-  //    mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
-  //      private final Runnable mRunnable = new Runnable() {
-  //        @Override public void run() {
-  //          setSize(0, 0);
-  //        }
-  //      };
-  //
-  //      @Override
-  //      public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-  //          int oldTop, int oldRight, int oldBottom) {
-  //        if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
-  //          mHandler.removeCallbacks(mRunnable);
-  //          mHandler.post(mRunnable);
-  //        }
-  //      }
-  //    };
-  //  }
-  //  mVideoSurfaceFrame.addOnLayoutChangeListener(mOnLayoutChangeListener);
-  //}
-
-  //private class MyPlayerListener implements MediaPlayer.EventListener {
-  //  private WeakReference<VideoActivityVLC> mOwner;
-  //
-  //  MyPlayerListener(VideoActivityVLC owner) {
-  //    mOwner = new WeakReference<>(owner);
-  //  }
-  //
-  //  @Override public void onEvent(MediaPlayer.Event event) {
-  //    VideoActivityVLC player = mOwner.get();
-  //
-  //    switch (event.type) {
-  //      case MediaPlayer.Event.EndReached:
-  //        player.releasePlayer();
-  //        break;
-  //      case MediaPlayer.Event.Playing:
-  //        nsdUtils.tearDown();
-  //        updateStatusTextView(getString(R.string.video_activity_connected));
-  //        loadingOverlay.postDelayed(new Runnable() {
-  //          @Override public void run() {
-  //            hideOverlay();
-  //          }
-  //        }, 1000);
-  //        break;
-  //      case MediaPlayer.Event.Paused:
-  //      case MediaPlayer.Event.Stopped:
-  //      default:
-  //        break;
-  //    }
-  //  }
-  //}
-
-  /**
-   * Update TextView text and animates it.
-   *
-   * @param text New text to be displayed.
-   */
-  private void updateStatusTextView(String text) {
-    loadingText.setAlpha(0f);
-    loadingText.setText(text);
-    loadingText.setTranslationY(Units.dpToPixel(this, 50));
-    loadingText.animate().setDuration(400).translationY(0f).alpha(1f).start();
-  }
-
-  private void hideOverlay() {
-    loadingOverlay.animate().alpha(0f).setDuration(500).start();
-  }
-
-  //##########################
 
   @Inject NsdUtils nsdUtils;
 
@@ -231,9 +47,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
 
   // display surface
   @BindView(R.id.surface) SurfaceView mVideoSurface;
-  private SurfaceHolder holder;
 
-  private String SAMPLE_URL;
   private static final int SURFACE_BEST_FIT = 0;
   private static final int SURFACE_FIT_SCREEN = 1;
   private static final int SURFACE_FILL = 2;
@@ -254,6 +68,20 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
   private int mVideoSarNum = 0;
   private int mVideoSarDen = 0;
 
+  private ConnectionInfo connectionInfo;
+
+  public static Intent createIntent(Context context, String code) {
+    Intent intent = new Intent(context, VideoActivityVLC.class);
+    intent.putExtra(CODE_KEY, code);
+    return intent;
+  }
+
+  public static Intent createIntentPath(Context context, String path) {
+    Intent intent = new Intent(context, VideoActivityVLC.class);
+    intent.putExtra(PATH_KEY, path);
+    return intent;
+  }
+
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
@@ -261,20 +89,36 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     IOCProvider.getInstance().inject(this);
     ButterKnife.bind(this);
 
-    holder = mVideoSurface.getHolder();
-
     updateStatusTextView(getString(R.string.video_activity_looking_for_host));
     code = getIntent().getStringExtra(CODE_KEY);
     path = getIntent().getStringExtra(PATH_KEY);
-
-    hideOverlay();
-
-    SAMPLE_URL = "rtsp://d:" + code + "@192.168.1.2:55640";
 
     final ArrayList<String> args = new ArrayList<>();
     args.add("-vvv");
     mLibVLC = new LibVLC(this, args);
     mMediaPlayer = new MediaPlayer(mLibVLC);
+
+    nsdUtils.discoverNsdService(this, code, new NsdUtils.NsdResolveCallback() {
+      @Override public void onHostFound(final ConnectionInfo connectionInfo) {
+        VideoActivityVLC.this.connectionInfo = connectionInfo;
+        Log.d(TAG, "[VideoActivityVLC] - onHostFound()");
+        VideoActivityVLC.this.runOnUiThread(new Runnable() {
+          @Override public void run() {
+            updateStatusTextView(getString(R.string.video_activity_host_found));
+            loadingOverlay.postDelayed(new Runnable() {
+              @Override public void run() {
+                updateStatusTextView(getString(R.string.video_activity_connecting));
+              }
+            }, 1000);
+            startPlayer();
+          }
+        });
+      }
+
+      @Override public void onError() {
+        Log.e(TAG, "[VideoActivityVLC] - error");
+      }
+    });
   }
 
   @Override protected void onDestroy() {
@@ -286,14 +130,15 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
   @Override protected void onStart() {
     super.onStart();
 
+    mMediaPlayer.setEventListener(new MyPlayerListener());
+
     final IVLCVout vlcVout = mMediaPlayer.getVLCVout();
     vlcVout.setVideoView(mVideoSurface);
     vlcVout.attachViews(this);
 
-    Media media = new Media(mLibVLC, Uri.parse(SAMPLE_URL));
-    mMediaPlayer.setMedia(media);
-    media.release();
-    mMediaPlayer.play();
+    if (connectionInfo != null) {
+      startPlayer();
+    }
 
     if (mOnLayoutChangeListener == null) {
       mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
@@ -316,6 +161,22 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     mVideoSurfaceFrame.addOnLayoutChangeListener(mOnLayoutChangeListener);
   }
 
+  private void startPlayer() {
+    if (!mMediaPlayer.isPlaying()) {
+      Media media = new Media(mLibVLC, Uri.parse(connectionInfo != null ? "rtsp://"
+          + MediaShareActivity.USERNAME
+          + ":"
+          + code
+          + "@"
+          + connectionInfo.getHost()
+          + ":"
+          + connectionInfo.getPort() : path));
+      mMediaPlayer.setMedia(media);
+      media.release();
+      mMediaPlayer.play();
+    }
+  }
+
   @Override protected void onStop() {
     super.onStop();
 
@@ -325,8 +186,8 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     }
 
     mMediaPlayer.stop();
-
     mMediaPlayer.getVLCVout().detachViews();
+    mMediaPlayer.setEventListener(null);
   }
 
   private void changeMediaPlayerLayout(int displayW, int displayH) {
@@ -505,5 +366,74 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     mVideoSarNum = sarNum;
     mVideoSarDen = sarDen;
     updateVideoSurfaces();
+  }
+
+  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      confirmLeave();
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
+  }
+
+  private void confirmLeave() {
+    AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+    alertDialog.setTitle("Stop streaming");
+    alertDialog.setMessage("Do you want to finish this session?");
+    alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+        new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int which) {
+            startActivity(SessionFinishActivity.createIntent(VideoActivityVLC.this, false));
+            finish();
+          }
+        });
+    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
+        new DialogInterface.OnClickListener() {
+          @Override public void onClick(DialogInterface dialog, int which) {
+            //  Do nothing
+          }
+        });
+    alertDialog.show();
+  }
+
+  /**
+   * Update TextView text and animates it.
+   *
+   * @param text New text to be displayed.
+   */
+  private void updateStatusTextView(String text) {
+    loadingText.setAlpha(0f);
+    loadingText.setText(text);
+    loadingText.setTranslationY(Units.dpToPixel(this, 50));
+    loadingText.animate().setDuration(400).translationY(0f).alpha(1f).start();
+  }
+
+  private void hideOverlay() {
+    loadingOverlay.animate().alpha(0f).setDuration(500).start();
+  }
+
+  private class MyPlayerListener implements MediaPlayer.EventListener {
+
+    @Override public void onEvent(MediaPlayer.Event event) {
+      switch (event.type) {
+        case MediaPlayer.Event.EndReached:
+          startActivity(SessionFinishActivity.createIntent(VideoActivityVLC.this, true));
+          finish();
+          break;
+        case MediaPlayer.Event.Playing:
+          nsdUtils.tearDown();
+          updateStatusTextView(getString(R.string.video_activity_connected));
+          loadingOverlay.postDelayed(new Runnable() {
+            @Override public void run() {
+              hideOverlay();
+            }
+          }, 1000);
+          break;
+        case MediaPlayer.Event.Paused:
+        case MediaPlayer.Event.Stopped:
+        default:
+          break;
+      }
+    }
   }
 }

@@ -27,6 +27,7 @@
       android:layout_alignParentBottom="true"
       android:layout_centerHorizontal="true"
       android:layout_marginBottom="20dp"
+      android:padding="@dimen/activity_vertical_margin"
       android:text="@string/session_finished_close"
       android:textColor="#fff"/>
 </RelativeLayout>
