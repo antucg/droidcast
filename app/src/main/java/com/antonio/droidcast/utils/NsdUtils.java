@@ -2,8 +2,10 @@ package com.antonio.droidcast.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 import com.antonio.droidcast.ioc.IOCProvider;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Map;
 import javax.inject.Inject;
+import net.majorkernelpanic.streaming.rtsp.RtspServer;
 
 /**
  * Created by antonio.carrasco on 15/02/2017.
@@ -21,6 +24,7 @@ import javax.inject.Inject;
 
 public class NsdUtils {
 
+  public final static int DEFAULT_PORT = 55640;
   private final String TAG = this.getClass().getSimpleName();
   private final String NSD_ATTRIBUTE_KEY = "nsd_key";
   private final String NSD_SERVICE_NAME = "DroidCast";
@@ -39,20 +43,20 @@ public class NsdUtils {
     nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
   }
 
-  private int getAvailablePort() {
-    try {
-      ServerSocket serverSocket = new ServerSocket(0);
-      return serverSocket.getLocalPort();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return 0;
+  public int getAvailablePort() {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    return Integer.parseInt(sharedPreferences.getString(RtspServer.KEY_PORT, String.valueOf(DEFAULT_PORT)));
+    //try {
+    //  ServerSocket serverSocket = new ServerSocket(0);
+    //  return serverSocket.getLocalPort();
+    //} catch (IOException e) {
+    //  e.printStackTrace();
+    //}
+    //return 0;
   }
 
-  public void registerNsdService(Activity activity, String mediaShareCode) {
-    //int port = getAvailablePort();
-    int port = 55640;
-
+  public void registerNsdService(Activity activity, String mediaShareCode, NsdManager.RegistrationListener listener) {
+    int port = getAvailablePort();
     //if (port == 0) {
     //  return;
     //}
@@ -63,25 +67,7 @@ public class NsdUtils {
       return;
     }
 
-    registrationListener = new NsdManager.RegistrationListener() {
-      @Override public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-        Log.e(TAG, "[NsdUtils] - onRegistrationFailed, " + errorCode);
-      }
-
-      @Override public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-        Log.e(TAG, "[NsdUtils] - onUnregistrationFailed, " + errorCode);
-      }
-
-      @Override public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-        Log.d(TAG, "[NsdUtils] - onServiceRegistered");
-      }
-
-      @Override public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-        Log.d(TAG, "[NsdUtils] - onServiceUnregistered");
-      }
-    };
-
-    Log.d(TAG, "nsdKey: " + nsdKey + ", code: " + mediaShareCode);
+    registrationListener = listener;
     String raw = nsdKey + mediaShareCode;
     String encoded = Base64.encodeToString(raw.getBytes(), Base64.NO_WRAP);
 

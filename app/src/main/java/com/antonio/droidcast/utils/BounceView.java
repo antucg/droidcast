@@ -12,8 +12,12 @@ import android.view.animation.BounceInterpolator;
 
 public class BounceView {
   public static void animate(View v, final Runnable callback) {
-    ObjectAnimator scaleX = ObjectAnimator.ofFloat(v, "scaleX", 1.5f, 1);
-    ObjectAnimator scaleY = ObjectAnimator.ofFloat(v, "scaleY", 1.5f, 1);
+    animate(v, 1.5f, callback);
+  }
+
+  public static void animate(View v, float scale, final Runnable callback) {
+    ObjectAnimator scaleX = ObjectAnimator.ofFloat(v, "scaleX", scale, 1);
+    ObjectAnimator scaleY = ObjectAnimator.ofFloat(v, "scaleY", scale, 1);
     AnimatorSet animatorSet = new AnimatorSet();
     animatorSet.setDuration(500);
     animatorSet.setInterpolator(new BounceInterpolator());

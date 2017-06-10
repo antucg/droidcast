@@ -47,6 +47,25 @@
         android:visibility="invisible"/>
   </LinearLayout>
 
+  <TextView
+      android:id="@+id/home_click_here_textview"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignRight="@+id/arrow"
+      android:layout_alignEnd="@+id/arrow"
+      android:layout_above="@+id/arrow"
+      android:text="@string/home_click_here_to_share"
+      android:textAlignment="textEnd"
+      android:textSize="20sp"/>
+
+  <ImageView
+      android:id="@+id/arrow"
+      android:layout_width="50dp"
+      android:layout_height="50dp"
+      android:layout_above="@+id/home_stream_button"
+      android:layout_toStartOf="@+id/home_stream_button"
+      android:src="@mipmap/arrow"/>
+
   <android.support.design.widget.FloatingActionButton
       android:id="@+id/home_stream_button"
       android:layout_width="wrap_content"

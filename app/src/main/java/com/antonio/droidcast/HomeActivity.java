@@ -4,9 +4,11 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -15,6 +17,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.ioc.IOCProvider;
+import com.antonio.droidcast.utils.BounceView;
 import com.antonio.droidcast.utils.NsdUtils;
 import javax.inject.Inject;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
@@ -25,6 +28,7 @@ public class HomeActivity extends BaseActivity {
   @Inject NsdUtils nsdUtils;
   @BindView(R.id.home_code_editText) EditText codeEditText;
   @BindView(R.id.home_code_empty_textview) TextView codeEmptyTextView;
+  @BindView(R.id.home_click_here_textview) TextView clickHereTextView;
 
   /**
    * Create an intent that opens this activity
@@ -47,8 +51,11 @@ public class HomeActivity extends BaseActivity {
 
     // Sets the port of the RTSP server to 55640
     SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    editor.putString(RtspServer.KEY_PORT, String.valueOf(55640));
+    editor.putString(RtspServer.KEY_PORT, String.valueOf(NsdUtils.DEFAULT_PORT));
     editor.apply();
+
+    Typeface font = Typeface.createFromAsset(getAssets(), "fonts/Caveat-Regular.ttf");
+    clickHereTextView.setTypeface(font);
   }
 
   /**
@@ -57,7 +64,11 @@ public class HomeActivity extends BaseActivity {
    * @param v Clicked view.
    */
   @OnClick(R.id.home_stream_button) public void startStreaming(View v) {
-    startActivity(MediaShareActivity.createIntent(this));
+    BounceView.animate(v, 1.3f, new Runnable() {
+      @Override public void run() {
+        startActivity(MediaShareActivity.createIntent(HomeActivity.this));
+      }
+    });
   }
 
   /**
@@ -67,10 +78,13 @@ public class HomeActivity extends BaseActivity {
    */
   @OnClick(R.id.home_connect_button) public void onConnect(final View v) {
     if (codeEditText.getText().length() < 1) {
-    //if (codeEditText.getText().length() < 6) {
+      //if (codeEditText.getText().length() < 6) {
       v.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
 
-      codeEmptyTextView.getAnimation().cancel();
+      Animation currentAnimation = codeEmptyTextView.getAnimation();
+      if (currentAnimation != null) {
+        currentAnimation.cancel();
+      }
       codeEmptyTextView.setAlpha(1f);
       codeEmptyTextView.setVisibility(View.VISIBLE);
       codeEmptyTextView.animate()
@@ -85,7 +99,8 @@ public class HomeActivity extends BaseActivity {
           });
       return;
     }
-    startActivity(VideoActivityVLC.createIntent(HomeActivity.this, codeEditText.getText().toString()));
+    startActivity(
+        VideoActivityVLC.createIntent(HomeActivity.this, codeEditText.getText().toString()));
     //startActivity(VideoActivityVLC.createIntentPath(HomeActivity.this,
     //    "rtsp://192.168.1.10:7654/test2-rtsp"));
   }

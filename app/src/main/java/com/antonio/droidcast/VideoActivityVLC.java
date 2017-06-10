@@ -171,6 +171,9 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
           + connectionInfo.getHost()
           + ":"
           + connectionInfo.getPort() : path));
+      media.addOption(":network-caching=150");
+      media.addOption(":clock-jitter=0");
+      media.addOption(":clock-synchro=0");
       mMediaPlayer.setMedia(media);
       media.release();
       mMediaPlayer.play();

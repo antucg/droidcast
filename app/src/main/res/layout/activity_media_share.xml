@@ -5,41 +5,60 @@
     android:id="@+id/activity_media_share"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/activity_vertical_margin"
     tools:context="com.antonio.droidcast.MediaShareActivity">
 
-  <LinearLayout
-      android:id="@+id/code_wrapper"
-      android:layout_width="wrap_content"
+  <ProgressBar
+      android:id="@+id/media_share_progress"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_centerInParent="true"
-      android:orientation="vertical">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/media_share_give_code"/>
+      android:layout_gravity="center_horizontal"
+      android:layout_marginTop="-8dp"
+      android:indeterminate="true"
+      style="@android:style/Widget.DeviceDefault.ProgressBar.Horizontal"/>
 
-    <TextView
-        android:id="@+id/media_share_code_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:textAlignment="center"
-        android:textSize="24sp"/>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:padding="@dimen/activity_vertical_margin">
 
-    <TextView
-        android:id="@+id/media_share_waiting_text"
+    <LinearLayout
+        android:id="@+id/code_wrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="50dp"
-        android:text="@string/waiting_for_client"
-        android:textAlignment="center"/>
-    <ProgressBar
-        android:id="@+id/media_share_progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"/>
-  </LinearLayout>
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:text="@string/media_share_give_code"
+          android:textAlignment="center"/>
 
+      <TextView
+          android:id="@+id/media_share_code_textview"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:textAlignment="center"
+          android:textSize="24sp"/>
+
+      <TextView
+          android:id="@+id/media_share_copy_link_textview"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="@dimen/activity_vertical_margin"
+          android:text="@string/copy_link_text"
+          android:textAlignment="center"/>
+
+      <Button
+          android:id="@+id/media_share_copy_link_button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="@dimen/activity_half_margin"
+          android:text="@string/copy_link_button"
+          style="@style/PrimaryButton"/>
+    </LinearLayout>
+  </RelativeLayout>
 </RelativeLayout>

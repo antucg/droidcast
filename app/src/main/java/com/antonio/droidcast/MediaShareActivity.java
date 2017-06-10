@@ -3,6 +3,8 @@ package com.antonio.droidcast;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +14,8 @@ import android.content.pm.PackageManager;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
+import android.net.nsd.NsdManager;
+import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -24,15 +28,20 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import com.antonio.droidcast.ioc.IOCProvider;
+import com.antonio.droidcast.utils.BounceView;
 import com.antonio.droidcast.utils.NsdUtils;
+import com.antonio.droidcast.utils.Utils;
 import java.util.Random;
 import javax.inject.Inject;
 import net.majorkernelpanic.streaming.Session;
@@ -55,13 +64,15 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private boolean bound = false;
   private String code;
   private NotificationManager notificationManager;
+  private String linkURL = null;
 
   private boolean isStreaming = false;
 
   @BindView(R.id.code_wrapper) LinearLayout codeWrapper;
   @BindView(R.id.media_share_code_textview) TextView mediaShareCodeTextView;
-  @BindView(R.id.media_share_waiting_text) TextView mediaShareWaitingText;
   @BindView(R.id.media_share_progress) ProgressBar mediaShareProgressBar;
+  @BindView(R.id.media_share_copy_link_textview) TextView copyLinkTextView;
+  @BindView(R.id.media_share_copy_link_button) Button copyLinkButton;
 
   /**
    * Create an intent that opens this activity
@@ -101,13 +112,19 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     if (intent.getBooleanExtra(INTENT_KEY_STOP, false)) {
-      mMediaProjection.stop();
-      mMediaProjection = null;
-      nsdUtils.tearDown();
-      stopService(new Intent(this, RtspServer.class));
-      notificationManager.cancel(NOTIFICATION_ID);
+      stopServer();
       startActivity(SessionFinishActivity.createIntent(this, false));
     }
+  }
+
+  private void stopServer() {
+    if (mMediaProjection != null) {
+      mMediaProjection.stop();
+      mMediaProjection = null;
+    }
+    nsdUtils.tearDown();
+    stopService(new Intent(this, RtspServer.class));
+    notificationManager.cancel(NOTIFICATION_ID);
   }
 
   private void askForPermission() {
@@ -203,10 +220,36 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
         .setVideoEncoder(SessionBuilder.SCREEN_H264);
 
     // Starts the RTSP server
-    bindService(new Intent(this, RtspServer.class), serviceConnection, Context.BIND_AUTO_CREATE);
-    startService(new Intent(this, RtspServer.class));
-    nsdUtils.registerNsdService(this, code);
+    Intent intent = new Intent(this, RtspServer.class);
+    bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    startService(intent);
+
+    // Register NSD service so device can be found on the network
+    nsdUtils.registerNsdService(this, code, new NsdManager.RegistrationListener() {
+      @Override public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+        Log.e(TAG, "[NsdUtils] - onRegistrationFailed, " + errorCode);
+        stopServer();
+        Toast.makeText(MediaShareActivity.this, getString(R.string.media_share_nsd_error),
+            Toast.LENGTH_LONG).show();
+        finish();
+      }
+
+      @Override public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+        Log.e(TAG, "[NsdUtils] - onUnregistrationFailed, " + errorCode);
+      }
+
+      @Override public void onServiceRegistered(NsdServiceInfo serviceInfo) {
+        Log.d(TAG, "[NsdUtils] - onServiceRegistered");
+      }
+
+      @Override public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
+        Log.d(TAG, "[NsdUtils] - onServiceUnregistered");
+      }
+    });
+
+    // Build status bar notification
     buildNotificationControl();
+    buildLinkURL();
   }
 
   private void buildNotificationControl() {
@@ -219,7 +262,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(this).setSmallIcon(R.drawable.notification_bar_icon)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.manage_streaming))
+            .setContentText(getString(R.string.manage_streaming, code))
             .setAutoCancel(false)
             .setOngoing(true)
             .addAction(R.drawable.ic_media_stop, getString(R.string.notification_stop),
@@ -233,6 +276,25 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     mBuilder.setContentIntent(resultPendingIntent);
     notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+  }
+
+  private void buildLinkURL() {
+    String ip = Utils.getIPAddress(true);
+    if (ip != null) {
+      linkURL = "rtsp://" + USERNAME + ":" + code + "@" + ip + ":" + nsdUtils.getAvailablePort();
+    } else {
+      copyLinkTextView.setVisibility(View.GONE);
+      copyLinkButton.setVisibility(View.GONE);
+    }
+  }
+
+  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      if (!isStreaming) {
+        stopServer();
+      }
+    }
+    return super.onKeyDown(keyCode, event);
   }
 
   @Override protected void onStop() {
@@ -271,6 +333,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   @Override public void onSessionStopped() {
     Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
+    isStreaming = false;
   }
 
   private void logError(final String msg) {
@@ -296,4 +359,15 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
       bound = false;
     }
   };
+
+  @OnClick(R.id.media_share_copy_link_button) public void onCopyLinkClick(View v) {
+    BounceView.animate(v, new Runnable() {
+      @Override public void run() {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(linkURL, linkURL);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(MediaShareActivity.this, R.string.media_share_link_copied, Toast.LENGTH_LONG).show();
+      }
+    });
+  }
 }
