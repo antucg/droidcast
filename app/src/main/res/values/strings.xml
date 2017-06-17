@@ -23,6 +23,7 @@
   <!-- Notification -->
   <string name="manage_streaming">Droid Cast session started: %1$s</string>
   <string name="notification_stop">Stop screen sharing</string>
+  <string name="mute_micro">Mute microphone</string>
 
   <!-- Video activity -->
   <string name="video_activity_looking_for_host">Looking for host</string>
@@ -38,6 +39,9 @@
   <!-- Streaming started -->
   <string name="streaming_started">Streaming has started, your screen is now visible by the
     client.
+  </string>
+  <string name="enable_microphone">Enable microphone</string>
+  <string name="enable_from_notification">(You can also enable from notification)
   </string>
 
 </resources>

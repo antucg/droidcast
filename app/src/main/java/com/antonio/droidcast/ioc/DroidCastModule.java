@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.antonio.droidcast.dao.DaoFactory;
 import com.antonio.droidcast.dao.SharedPreferencesFactory;
 import com.antonio.droidcast.utils.MetaDataProvider;
+import com.antonio.droidcast.utils.NotificationUtils;
 import com.antonio.droidcast.utils.NsdUtils;
 import dagger.Module;
 import dagger.Provides;
@@ -43,5 +44,9 @@ import javax.inject.Singleton;
 
   @Provides @Singleton NsdUtils providesNsdUtils() {
     return new NsdUtils();
+  }
+
+  @Provides @Singleton NotificationUtils providesNotificationUtils() {
+    return new NotificationUtils(applicationContext);
   }
 }

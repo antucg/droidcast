@@ -1,8 +1,6 @@
 package com.antonio.droidcast;
 
 import android.Manifest;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -11,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
@@ -22,8 +21,6 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
@@ -40,6 +37,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.antonio.droidcast.ioc.IOCProvider;
 import com.antonio.droidcast.utils.BounceView;
+import com.antonio.droidcast.utils.NotificationUtils;
 import com.antonio.droidcast.utils.NsdUtils;
 import com.antonio.droidcast.utils.Utils;
 import java.util.Random;
@@ -51,10 +49,10 @@ import net.majorkernelpanic.streaming.rtsp.RtspServer;
 public class MediaShareActivity extends BaseActivity implements Session.Callback {
 
   @Inject NsdUtils nsdUtils;
+  @Inject NotificationUtils notificationUtils;
 
   private static final int REQUEST_CODE = 1000;
   public static final String USERNAME = "d";
-  public static final int NOTIFICATION_ID = 1;
   private static final String INTENT_KEY_STOP = "intent_key_stop";
 
   private MediaProjectionManager mProjectionManager;
@@ -63,8 +61,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private RtspServer rtspServerService;
   private boolean bound = false;
   private String code;
-  private NotificationManager notificationManager;
   private String linkURL = null;
+  private AudioManager audioManager;
 
   private boolean isStreaming = false;
 
@@ -100,6 +98,10 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     ButterKnife.bind(this);
     IOCProvider.getInstance().inject(this);
 
+    // Let's mute microphone by default
+    audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+    audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+    audioManager.setMicrophoneMute(true);
     mProjectionManager =
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     askForPermission();
@@ -124,7 +126,10 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     }
     nsdUtils.tearDown();
     stopService(new Intent(this, RtspServer.class));
-    notificationManager.cancel(NOTIFICATION_ID);
+    notificationUtils.cancelStreamNotification();
+    // Put microphone back to its normal state
+    audioManager.setMode(AudioManager.MODE_NORMAL);
+    audioManager.setMicrophoneMute(false);
   }
 
   private void askForPermission() {
@@ -216,7 +221,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
         .setContext(getApplicationContext())
         .setDisplayMetrics(metrics)
         .setMediaProjection(mMediaProjection)
-        .setAudioEncoder(SessionBuilder.AUDIO_NONE)
+        .setAudioEncoder(SessionBuilder.AUDIO_AAC)
         .setVideoEncoder(SessionBuilder.SCREEN_H264);
 
     // Starts the RTSP server
@@ -248,34 +253,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     });
 
     // Build status bar notification
-    buildNotificationControl();
+    notificationUtils.buildStreamNotification(code);
     buildLinkURL();
-  }
-
-  private void buildNotificationControl() {
-
-    Intent stopIntent = createStopIntent(this);
-    PendingIntent stopPendingIntent =
-        PendingIntent.getActivity(this, (int) System.currentTimeMillis(), stopIntent,
-            PendingIntent.FLAG_ONE_SHOT);
-
-    NotificationCompat.Builder mBuilder =
-        new NotificationCompat.Builder(this).setSmallIcon(R.drawable.notification_bar_icon)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.manage_streaming, code))
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .addAction(R.drawable.ic_media_stop, getString(R.string.notification_stop),
-                stopPendingIntent);
-    Intent resultIntent = MediaShareActivity.createIntent(this);
-    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-    stackBuilder.addParentStack(HomeActivity.class);
-    stackBuilder.addNextIntent(resultIntent);
-    PendingIntent resultPendingIntent =
-        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-    mBuilder.setContentIntent(resultPendingIntent);
-    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
   }
 
   private void buildLinkURL() {
@@ -336,6 +315,11 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     isStreaming = false;
   }
 
+  @Override protected void onDestroy() {
+    stopServer();
+    super.onDestroy();
+  }
+
   private void logError(final String msg) {
     final String error = (msg == null) ? "Error unknown" : msg;
     AlertDialog.Builder builder = new AlertDialog.Builder(MediaShareActivity.this);
@@ -366,7 +350,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText(linkURL, linkURL);
         clipboard.setPrimaryClip(clip);
-        Toast.makeText(MediaShareActivity.this, R.string.media_share_link_copied, Toast.LENGTH_LONG).show();
+        Toast.makeText(MediaShareActivity.this, R.string.media_share_link_copied, Toast.LENGTH_LONG)
+            .show();
       }
     });
   }
