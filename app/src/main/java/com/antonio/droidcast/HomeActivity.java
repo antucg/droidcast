@@ -78,8 +78,7 @@ public class HomeActivity extends BaseActivity {
    * @param v Clicked button.
    */
   @OnClick(R.id.home_connect_button) public void onConnect(final View v) {
-    if (codeEditText.getText().length() < 1) {
-      //if (codeEditText.getText().length() < 6) {
+    if (codeEditText.getText().length() < 6) {
       v.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
 
       Animation currentAnimation = codeEmptyTextView.getAnimation();

@@ -106,8 +106,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     askForPermission();
     Random rnd = new Random();
-    //code = Integer.toString(100000 + rnd.nextInt(900000));
-    code = "1";
+    code = Integer.toString(100000 + rnd.nextInt(900000));
     mediaShareCodeTextView.setText(code);
   }
 
