@@ -7,7 +7,7 @@
     android:background="@color/colorPrimary"
     android:orientation="vertical"
     android:padding="@dimen/activity_horizontal_margin"
-    tools:context="com.antonio.droidcast.SessionFinishActivity">
+    tools:context="com.app.droidcast.SessionFinishActivity">
 
   <TextView
       android:id="@+id/streaming_started_textview"

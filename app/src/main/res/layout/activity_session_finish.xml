@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorAccent"
     android:padding="@dimen/activity_horizontal_margin"
-    tools:context="com.antonio.droidcast.SessionFinishActivity">
+    tools:context="com.app.droidcast.SessionFinishActivity">
 
   <TextView
       android:id="@+id/session_finish_textview"

@@ -5,7 +5,7 @@
     android:id="@+id/activity_media_share"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.antonio.droidcast.MediaShareActivity">
+    tools:context="com.app.droidcast.MediaShareActivity">
 
   <ProgressBar
       android:id="@+id/media_share_progress"
