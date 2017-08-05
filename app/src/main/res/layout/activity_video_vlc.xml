@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:baselineAligned="false"
+    android:keepScreenOn="true"
     android:orientation="vertical"
     tools:context=".VideoActivityVLC">
 
@@ -17,8 +18,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:foregroundGravity="clip_horizontal|clip_vertical"
         android:background="#00f"
+        android:foregroundGravity="clip_horizontal|clip_vertical"
         tools:ignore="true">
       <SurfaceView
           android:id="@+id/surface"

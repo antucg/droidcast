@@ -22,7 +22,8 @@
   <string name="media_share_link_copied">Link copied.</string>
 
   <!-- Notification -->
-  <string name="manage_streaming">Droid Cast session started: %1$s</string>
+  <string name="manage_streaming">Droid Cast session: %1$s.</string>
+  <string name="streaming_clients">Number of clients: %1$d.</string>
   <string name="notification_stop">Stop screen sharing</string>
   <string name="mute_micro">Mute microphone</string>
 

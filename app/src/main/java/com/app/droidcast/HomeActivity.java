@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -39,7 +40,9 @@ public class HomeActivity extends BaseActivity {
    */
   public static Intent createIntent(Context context) {
     Intent intent = new Intent(context, HomeActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    //intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
+    //    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
     return intent;
   }
 
@@ -103,5 +106,13 @@ public class HomeActivity extends BaseActivity {
         VideoActivityVLC.createIntent(HomeActivity.this, codeEditText.getText().toString()));
     //startActivity(VideoActivityVLC.createIntentPath(HomeActivity.this,
     //    "rtsp://192.168.1.10:7654/test2-rtsp"));
+  }
+
+  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      HomeActivity.this.moveTaskToBack(true);
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
   }
 }

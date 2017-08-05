@@ -56,6 +56,7 @@ public class SessionFinishActivity extends BaseActivity {
     BounceView.animate(view, new Runnable() {
       @Override public void run() {
         startActivity(HomeActivity.createIntent(SessionFinishActivity.this));
+        finish();
       }
     });
   }
@@ -63,6 +64,7 @@ public class SessionFinishActivity extends BaseActivity {
   @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
     if (keyCode == KeyEvent.KEYCODE_BACK) {
       startActivity(HomeActivity.createIntent(SessionFinishActivity.this));
+      finish();
       return true;
     }
     return super.onKeyDown(keyCode, event);

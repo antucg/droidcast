@@ -14,15 +14,15 @@ import com.app.droidcast.MuteService;
 import com.app.droidcast.R;
 
 /**
- * Created by antonio.carrasco on 15/06/2017.
+ * Utility class to handle app notifications.
  */
-
 public class NotificationUtils {
   private static final int STREAM_NOTIFICATION_ID = 1;
   private static final int NEW_CONNECTION_ID = 2;
   private Context context;
   private NotificationManager notificationManager;
   private String currentCode;
+  private int clientsCount = 0;
 
   public NotificationUtils(Context context) {
     this.context = context;
@@ -30,15 +30,37 @@ public class NotificationUtils {
         (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
   }
 
+  /**
+   * Build and display stream notification in the status bar.
+   *
+   * @param code Code of the current session.
+   */
   public void buildStreamNotification(String code) {
     currentCode = code;
     buildAndShowNotification();
   }
 
+  /**
+   * Update stream notification.
+   */
   public void updateStreamNotification() {
     buildAndShowNotification();
   }
 
+  /**
+   * Update stream notification with the provided number of clients.
+   *
+   * @param clientsCount Number of connected clients.
+   */
+  public void updateStreamNotification(int clientsCount) {
+    this.clientsCount = clientsCount;
+    buildAndShowNotification();
+  }
+
+  /**
+   * Build the notification for the current session. Will show whether microphone
+   * is ON or OFF and number of connected clients.
+   */
   private void buildAndShowNotification() {
     Intent stopIntent = MediaShareActivity.createStopIntent(context);
     PendingIntent stopPendingIntent =
@@ -55,8 +77,8 @@ public class NotificationUtils {
 
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
-            .setContentTitle(context.getString(R.string.app_name))
-            .setContentText(context.getString(R.string.manage_streaming, currentCode))
+            .setContentTitle(context.getString(R.string.manage_streaming, currentCode))
+            .setContentText(context.getString(R.string.streaming_clients, clientsCount))
             .setAutoCancel(false)
             .setOngoing(true)
             .addAction(R.mipmap.ic_media_stop, context.getString(R.string.notification_stop),
@@ -72,6 +94,9 @@ public class NotificationUtils {
     notificationManager.notify(STREAM_NOTIFICATION_ID, mBuilder.build());
   }
 
+  /**
+   * Show a notification to notify a user of a new incoming connection.
+   */
   public void newConnection() {
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
@@ -84,7 +109,11 @@ public class NotificationUtils {
     notificationManager.notify(NEW_CONNECTION_ID, mBuilder.build());
   }
 
+  /**
+   * Cancel notifications from the status bar.
+   */
   public void cancelStreamNotification() {
     notificationManager.cancel(STREAM_NOTIFICATION_ID);
+    notificationManager.cancel(NEW_CONNECTION_ID);
   }
 }

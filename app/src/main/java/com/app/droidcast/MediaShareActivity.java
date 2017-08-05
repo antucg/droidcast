@@ -63,6 +63,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private AudioManager audioManager;
 
   private boolean isStreaming = false;
+  private int clientsCount = 0;
 
   @BindView(R.id.code_wrapper) LinearLayout codeWrapper;
   @BindView(R.id.media_share_code_textview) TextView mediaShareCodeTextView;
@@ -82,6 +83,12 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     return intent;
   }
 
+  /**
+   * Creae an intent that stops the server.
+   *
+   * @param context Application context.
+   * @return Intent
+   */
   public static Intent createStopIntent(Context context) {
     Intent intent = new Intent(context, MediaShareActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -300,15 +307,21 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   }
 
   @Override public void onSessionStarted() {
+    ++clientsCount;
     if (isStreaming) {
       notificationUtils.newConnection();
     } else {
       startActivity(StreamingStartedActivity.createIntent(this));
     }
+    notificationUtils.updateStreamNotification(clientsCount);
     isStreaming = true;
   }
 
   @Override public void onSessionStopped() {
+    if (clientsCount > 0) {
+      --clientsCount;
+    }
+    notificationUtils.updateStreamNotification(clientsCount);
     Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
   }
 
