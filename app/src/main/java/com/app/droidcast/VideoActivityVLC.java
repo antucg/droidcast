@@ -90,8 +90,13 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     ButterKnife.bind(this);
 
     updateStatusTextView(getString(R.string.video_activity_looking_for_host));
-    code = getIntent().getStringExtra(CODE_KEY);
-    path = getIntent().getStringExtra(PATH_KEY);
+    Intent intent = getIntent();
+    code = intent.getStringExtra(CODE_KEY);
+    path = intent.getStringExtra(PATH_KEY);
+    if (code == null) {
+      Uri data = intent.getData();
+      code = data.getQueryParameter("code");
+    }
 
     final ArrayList<String> args = new ArrayList<>();
     args.add("-vvv");
@@ -172,7 +177,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
           + ":"
           + connectionInfo.getPort() : path));
       media.setHWDecoderEnabled(true, false);
-      media.addOption(":network-caching=0");
+      media.addOption(":network-caching=150");
       media.addOption(":clock-jitter=0");
       media.addOption(":clock-synchro=0");
       mMediaPlayer.setMedia(media);

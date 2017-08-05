@@ -6,18 +6,19 @@
   <string name="home_recycler_resource_type">Resource type</string>
   <string name="home_connect_button">Connect</string>
   <string name="home_type_code">Type here code</string>
-  <string name="home_welcome_message">Welcome to Droid Cast, enter code below to connect to another
-    device or start streaming yourself.
-  </string>
+  <string name="home_welcome_message">Enter a code below to connect to a session.</string>
   <string name="home_code_not_empty">Code can\'t be empty</string>
   <string name="home_click_here_to_share">Click here to share\nyour screen</string>
 
   <!-- Media Share activity -->
   <string name="label_permissions">Please enable Microphone permision.</string>
   <string name="media_share_give_code">Give this code to the client:</string>
-  <string name="copy_link_text">Copy link and share it</string>
-  <string name="copy_link_button">Copy Link</string>
+  <string name="share_pc_link_button">Share PC Link</string>
+  <string name="share_app_link_button">Share App Link</string>
   <string name="media_share_nsd_error">There was an error, please try again.</string>
+  <string name="media_share_text_pc">Open this link in a Media Player: %1$s</string>
+  <string name="media_share_text_app">Click here to connect to a Droid Cast session: %1$s</string>
+  <string name="media_share_chooser_title">Share link:</string>
   <string name="media_share_link_copied">Link copied.</string>
 
   <!-- Notification -->

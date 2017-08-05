@@ -1,8 +1,6 @@
 package com.app.droidcast;
 
 import android.Manifest;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -69,8 +67,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   @BindView(R.id.code_wrapper) LinearLayout codeWrapper;
   @BindView(R.id.media_share_code_textview) TextView mediaShareCodeTextView;
   @BindView(R.id.media_share_progress) ProgressBar mediaShareProgressBar;
-  @BindView(R.id.media_share_copy_link_textview) TextView copyLinkTextView;
-  @BindView(R.id.media_share_copy_link_button) Button copyLinkButton;
+  @BindView(R.id.media_share_pc_link_button) Button sharePCLinkButton;
+  @BindView(R.id.media_share_separator) View shareSeparator;
 
   /**
    * Create an intent that opens this activity
@@ -129,6 +127,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     // Put microphone back to its normal state
     audioManager.setMode(AudioManager.MODE_NORMAL);
     audioManager.setMicrophoneMute(false);
+    isStreaming = false;
   }
 
   private void askForPermission() {
@@ -261,8 +260,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     if (ip != null) {
       linkURL = "rtsp://" + USERNAME + ":" + code + "@" + ip + ":" + nsdUtils.getAvailablePort();
     } else {
-      copyLinkTextView.setVisibility(View.GONE);
-      copyLinkButton.setVisibility(View.GONE);
+      sharePCLinkButton.setVisibility(View.GONE);
+      shareSeparator.setVisibility(View.GONE);
     }
   }
 
@@ -302,16 +301,15 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   @Override public void onSessionStarted() {
     if (isStreaming) {
-      return;
+      notificationUtils.newConnection();
+    } else {
+      startActivity(StreamingStartedActivity.createIntent(this));
     }
-
     isStreaming = true;
-    startActivity(StreamingStartedActivity.createIntent(this));
   }
 
   @Override public void onSessionStopped() {
     Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
-    isStreaming = false;
   }
 
   @Override protected void onDestroy() {
@@ -343,15 +341,43 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     }
   };
 
-  @OnClick(R.id.media_share_copy_link_button) public void onCopyLinkClick(View v) {
+  /**
+   * Handler for Share PC Link event.
+   *
+   * @param v View that receives the event.
+   */
+  @OnClick(R.id.media_share_pc_link_button) public void onSharePCLinkClick(View v) {
     BounceView.animate(v, new Runnable() {
       @Override public void run() {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(linkURL, linkURL);
-        clipboard.setPrimaryClip(clip);
-        Toast.makeText(MediaShareActivity.this, R.string.media_share_link_copied, Toast.LENGTH_LONG)
-            .show();
+        shareLink(getString(R.string.media_share_text_pc, linkURL));
       }
     });
+  }
+
+  /**
+   * Handler for Share App Link click event.
+   *
+   * @param v View that receives the event.
+   */
+  @OnClick(R.id.media_share_app_link_button) public void onShareAppLinkClick(View v) {
+    BounceView.animate(v, new Runnable() {
+      @Override public void run() {
+        String appLink = "http://app.droidcast.com/?code=" + code;
+        shareLink(getString(R.string.media_share_text_app, appLink));
+      }
+    });
+  }
+
+  /**
+   * Share the link with apps that support it.
+   *
+   * @param link Link to share, app or pc.
+   */
+  private void shareLink(String link) {
+    Intent sendIntent = new Intent();
+    sendIntent.setAction(Intent.ACTION_SEND);
+    sendIntent.setType("text/plain");
+    sendIntent.putExtra(Intent.EXTRA_TEXT, link);
+    startActivity(Intent.createChooser(sendIntent, getString(R.string.media_share_chooser_title)));
   }
 }

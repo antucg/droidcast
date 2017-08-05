@@ -1,5 +1,6 @@
 package com.app.droidcast.utils;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -18,6 +19,7 @@ import com.app.droidcast.R;
 
 public class NotificationUtils {
   private static final int STREAM_NOTIFICATION_ID = 1;
+  private static final int NEW_CONNECTION_ID = 2;
   private Context context;
   private NotificationManager notificationManager;
   private String currentCode;
@@ -49,8 +51,7 @@ public class NotificationUtils {
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-    int muteIcon = audioManager.isMicrophoneMute() ? R.drawable.ic_voice_search_api_holo_dark
-        : R.drawable.ic_voice_search_api_holo_light;
+    int muteIcon = audioManager.isMicrophoneMute() ? R.mipmap.mic_off : R.mipmap.mic_on;
 
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
@@ -58,7 +59,7 @@ public class NotificationUtils {
             .setContentText(context.getString(R.string.manage_streaming, currentCode))
             .setAutoCancel(false)
             .setOngoing(true)
-            .addAction(R.drawable.ic_media_stop, context.getString(R.string.notification_stop),
+            .addAction(R.mipmap.ic_media_stop, context.getString(R.string.notification_stop),
                 stopPendingIntent)
             .addAction(muteIcon, context.getString(R.string.mute_micro), mutePendingIntent);
     Intent resultIntent = MediaShareActivity.createIntent(context);
@@ -69,6 +70,18 @@ public class NotificationUtils {
         stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
     mBuilder.setContentIntent(resultPendingIntent);
     notificationManager.notify(STREAM_NOTIFICATION_ID, mBuilder.build());
+  }
+
+  public void newConnection() {
+    NotificationCompat.Builder mBuilder =
+        new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText("New connection")
+            .setDefaults(Notification.DEFAULT_ALL)
+            .setPriority(Notification.PRIORITY_HIGH)
+            .setAutoCancel(true);
+
+    notificationManager.notify(NEW_CONNECTION_ID, mBuilder.build());
   }
 
   public void cancelStreamNotification() {

@@ -32,6 +32,7 @@ public class ScreenStream extends VideoStream {
   private VirtualDisplay virtualDisplay;
   private Surface mediaCodecSurface;
   private OrientantionListener.OnOrientationChange onOrientationChange;
+  private MediaCodecInputStream is;
 
   public ScreenStream(Context context, MediaProjection mediaProjection,
       DisplayMetrics displayMetrics) {
@@ -132,7 +133,8 @@ public class ScreenStream extends VideoStream {
     }
 
     // The packetizer encapsulates the bit stream in an RTP stream and send it over the network
-    mPacketizer.setInputStream(new MediaCodecInputStream(mMediaCodec));
+    is = new MediaCodecInputStream(mMediaCodec);
+    mPacketizer.setInputStream(is);
     mPacketizer.start();
     mStreaming = true;
     startScreenOrientationListener();
@@ -141,6 +143,61 @@ public class ScreenStream extends VideoStream {
   private void startScreenOrientationListener() {
     onOrientationChange = new OrientantionListener.OnOrientationChange() {
       @Override public void newOrientation(int orientation) {
+        //((H264Packetizer) mPacketizer).setIsPaused(true);
+        //
+        //MediaCodec rotatedMediaCodec;
+        //try {
+        //  rotatedMediaCodec = MediaCodecUtils.buildMediaCodec(orientation);
+        //} catch (IOException e) {
+        //  releaseEncoders();
+        //  Log.e(TAG, "[ScreenStream] - OrientantionListener(), error creating MediaCodec");
+        //  return;
+        //}
+        //
+        //int width = orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_WIDTH : MediaCodecUtils.VIDEO_HEIGHT;
+        //int height = orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_HEIGHT : MediaCodecUtils.VIDEO_WIDTH;
+        ////MediaFormat format = MediaFormat.createVideoFormat("video/avc", width, height);
+        ////
+        ////// Set some required properties. The media codec may fail if these aren't defined.
+        ////format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
+        ////    MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        ////format.setInteger(MediaFormat.KEY_BIT_RATE, 1800000);
+        ////format.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
+        ////format.setInteger(MediaFormat.KEY_CAPTURE_RATE, 30);
+        ////format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1); // 1 seconds between I-frames
+        ////format.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 1000000L / (long) 30);
+        ////format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0);
+        ////
+        ////// Create a MediaCodec encoder and configure it. Get a Surface we can use for recording into.
+        ////mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        //if (mediaCodecSurface != null) {
+        //  mediaCodecSurface.release();
+        //  mediaCodecSurface = null;
+        //}
+        //mediaCodecSurface = rotatedMediaCodec.createInputSurface();
+        //rotatedMediaCodec.start();
+        ////if (virtualDisplay != null) {
+        ////  virtualDisplay.release();
+        ////  virtualDisplay = null;
+        ////}
+        //virtualDisplay.resize(width, height, MediaCodecUtils.SCREEN_DPI);
+        //virtualDisplay.setSurface(mediaCodecSurface);
+        ////virtualDisplay = MediaCodecUtils.buildVirtualDisplay(mediaProjection, mediaCodecSurface, displayMetrics,
+        ////    orientation);
+        //setStreamParameters();
+        //((H264Packetizer) mPacketizer).setIsPaused(false);
+        //
+        //if (mMediaCodec != null) {
+        //  mMediaCodec.stop();
+        //  mMediaCodec.release();
+        //  mMediaCodec = null;
+        //}
+        //
+        //mMediaCodec = rotatedMediaCodec;
+
+        /**
+         * Kind of working
+         */
         MediaCodec rotatedMediaCodec;
         try {
           rotatedMediaCodec = MediaCodecUtils.buildMediaCodec(orientation);
@@ -151,39 +208,26 @@ public class ScreenStream extends VideoStream {
         }
         Surface rotatedSurface = rotatedMediaCodec.createInputSurface();
         rotatedMediaCodec.start();
-        //int width =
-        //    orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_WIDTH
-        //        : MediaCodecUtils.VIDEO_HEIGHT;
-        //int height =
-        //    orientation == Configuration.ORIENTATION_PORTRAIT ? MediaCodecUtils.VIDEO_HEIGHT
-        //        : MediaCodecUtils.VIDEO_WIDTH;
-        //int density = MediaCodecUtils.SCREEN_DPI;
 
-        VirtualDisplay rotatedVirtualDisplay = MediaCodecUtils.buildVirtualDisplay(mediaProjection, rotatedSurface, displayMetrics, orientation);
-        mPacketizer.stop();
+        VirtualDisplay rotatedVirtualDisplay =
+            MediaCodecUtils.buildVirtualDisplay(mediaProjection, rotatedSurface, displayMetrics,
+                orientation);
+
+        MediaCodecInputStream rotatedIs = new MediaCodecInputStream(rotatedMediaCodec);
+
+        //mPacketizer.stop();
+        ((H264Packetizer) mPacketizer).setIsPaused(true);
         setStreamParameters();
-        mPacketizer.setInputStream(new MediaCodecInputStream(rotatedMediaCodec));
-        mPacketizer.start();
+        mPacketizer.setInputStream(rotatedIs);
+        ((H264Packetizer) mPacketizer).setIsPaused(false);
+        //mPacketizer.start();
 
         releaseEncoders();
+        is.close();
+        is = rotatedIs;
         mMediaCodec = rotatedMediaCodec;
         mediaCodecSurface = rotatedSurface;
         virtualDisplay = rotatedVirtualDisplay;
-        //mPacketizer.stop();
-
-        //mMediaCodec.stop();
-
-        //virtualDisplay.resize(width, height, density);
-        //virtualDisplay.setSurface(rotatedSurface);
-
-        // The packetizer encapsulates the bit stream in an RTP stream and send it over the network
-        //mPacketizer.setInputStream(new MediaCodecInputStream(rotatedMediaCodec));
-        //mPacketizer.start();
-
-        //mMediaCodec.release();
-        //mediaCodecSurface.release();
-        //mMediaCodec = rotatedMediaCodec;
-        //mediaCodecSurface = rotatedSurface;
       }
     };
 

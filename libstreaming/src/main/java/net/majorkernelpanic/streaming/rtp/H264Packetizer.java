@@ -44,10 +44,15 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
   byte[] header = new byte[5];
   private int count = 0;
   private int streamType = 1;
+  private boolean isPaused = false;
 
   public H264Packetizer() {
     super();
     socket.setClockFrequency(90000);
+  }
+
+  public void setIsPaused(boolean state) {
+    isPaused = state;
   }
 
   public void start() {
@@ -114,18 +119,18 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
 
     try {
       while (!Thread.interrupted()) {
+        if (!isPaused) {
+          oldtime = System.nanoTime();
+          // We read a NAL units from the input stream and we send them
+          send();
+          // We measure how long it took to receive NAL units from the phone
+          duration = System.nanoTime() - oldtime;
 
-        oldtime = System.nanoTime();
-        // We read a NAL units from the input stream and we send them
-        send();
-        // We measure how long it took to receive NAL units from the phone
-        duration = System.nanoTime() - oldtime;
-
-        stats.push(duration);
-        // Computes the average duration of a NAL unit
-        delay = stats.average();
-        //Log.d(TAG,"duration: "+duration/1000000+" delay: "+delay/1000000);
-
+          stats.push(duration);
+          // Computes the average duration of a NAL unit
+          delay = stats.average();
+          //Log.d(TAG,"duration: "+duration/1000000+" delay: "+delay/1000000);
+        }
       }
     } catch (IOException e) {
     } catch (InterruptedException e) {

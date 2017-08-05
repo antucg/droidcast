@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/activity_horizontal_margin"
+    android:orientation="vertical"
     tools:context="com.app.droidcast.HomeActivity">
 
-  <TextView
+  <LinearLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:text="@string/home_welcome_message"/>
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:orientation="vertical"
+      android:padding="@dimen/activity_vertical_margin">
 
-  <LinearLayout android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_centerInParent="true"
-      android:orientation="vertical">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/home_welcome_message"
+    android:layout_marginTop="@dimen/activity_vertical_margin"/>
+
     <EditText
         android:id="@+id/home_code_editText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:hint="@string/home_type_code"
         android:inputType="number"
         android:maxLength="6"
@@ -45,36 +51,51 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/home_code_not_empty"
         android:visibility="invisible"/>
+
   </LinearLayout>
 
-  <TextView
-      android:id="@+id/home_click_here_textview"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignRight="@+id/arrow"
-      android:layout_alignEnd="@+id/arrow"
-      android:layout_above="@+id/arrow"
-      android:text="@string/home_click_here_to_share"
-      android:textAlignment="textEnd"
-      android:textSize="20sp"/>
-
-  <ImageView
-      android:id="@+id/arrow"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_above="@+id/home_stream_button"
-      android:layout_toStartOf="@+id/home_stream_button"
-      android:src="@mipmap/arrow"/>
-
-  <android.support.design.widget.FloatingActionButton
-      android:id="@+id/home_stream_button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
       android:layout_alignParentBottom="true"
-      android:layout_alignParentEnd="true"
-      android:layout_marginBottom="10dp"
-      android:layout_marginEnd="10dp"
-      android:layout_marginRight="10dp"
-      android:src="@drawable/ic_media_route_off_holo_dark"
-  />
-</RelativeLayout>
+      android:background="@color/colorAccent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/home_bckg"/>
+
+    <TextView
+        android:id="@+id/home_click_here_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/arrow"
+        android:layout_alignEnd="@+id/arrow"
+        android:layout_alignRight="@+id/arrow"
+        android:text="@string/home_click_here_to_share"
+        android:textAlignment="textEnd"
+        android:textColor="#fff"
+        android:textSize="20sp"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/home_stream_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
+        android:src="@mipmap/floating_button_icon"
+        app:backgroundTint="#fff"/>
+    <ImageView
+        android:id="@+id/arrow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_above="@+id/home_stream_button"
+        android:layout_toStartOf="@+id/home_stream_button"
+        android:src="@mipmap/arrow"/>
+
+  </RelativeLayout>
+</LinearLayout>
