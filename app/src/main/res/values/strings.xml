@@ -5,27 +5,30 @@
   <string name="home_recycler_empty">No casted items yet, click here to start</string>
   <string name="home_recycler_resource_type">Resource type</string>
   <string name="home_connect_button">Connect</string>
-  <string name="home_type_code">Type here code</string>
+  <string name="home_type_code">Type code here</string>
   <string name="home_welcome_message">Enter a code below to connect to a session.</string>
-  <string name="home_code_not_empty">Code can\'t be empty</string>
+  <string name="home_code_not_empty">Code can\'t be empty.</string>
   <string name="home_click_here_to_share">Click here to share\nyour screen</string>
 
   <!-- Media Share activity -->
-  <string name="label_permissions">Please enable Microphone permision.</string>
+  <string name="label_permissions">Please enable Microphone permission.</string>
   <string name="media_share_give_code">Give this code to the client:</string>
   <string name="share_pc_link_button">Share PC Link</string>
   <string name="share_app_link_button">Share App Link</string>
   <string name="media_share_nsd_error">There was an error, please try again.</string>
-  <string name="media_share_text_pc">Open this link in a Media Player: %1$s</string>
-  <string name="media_share_text_app">Click here to connect to a Droid Cast session: %1$s</string>
+  <string name="media_share_text_pc">Open this link in a Media Player to connect to a Droid Cast
+    session: %1$s (like VLC)
+  </string>
+  <string name="media_share_text_app">Click this link to connect to a Droid Cast session: %1$s</string>
   <string name="media_share_chooser_title">Share link:</string>
   <string name="media_share_link_copied">Link copied.</string>
 
   <!-- Notification -->
   <string name="manage_streaming">Droid Cast session: %1$s.</string>
-  <string name="streaming_clients">Number of clients: %1$d.</string>
-  <string name="notification_stop">Stop screen sharing</string>
+  <string name="streaming_clients">Number of users: %1$d.</string>
+  <string name="notification_stop">Finish session</string>
   <string name="mute_micro">Mute microphone</string>
+  <string name="notification_new_connection">New connection</string>
 
   <!-- Video activity -->
   <string name="video_activity_looking_for_host">Looking for host</string>
@@ -43,7 +46,7 @@
     client.
   </string>
   <string name="enable_microphone">Enable microphone</string>
-  <string name="enable_from_notification">(You can also enable from notification)
+  <string name="enable_from_notification">(You can also enable it from the status bar notification)
   </string>
 
 </resources>

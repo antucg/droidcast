@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Droid Cast</string>
+  <string name="enable_microphone">Activar micrófono</string>
+  <string name="enable_from_notification">(Lo puedes activar desde la notificación de la barra de estado)</string>
+  <string name="home_click_here_to_share">Pulsa aquí para\ncompartir tu pantalla</string>
+  <string name="home_code_not_empty">El código no puede estar vacío.</string>
+  <string name="home_connect_button">Conectar</string>
+  <string name="home_type_code">Código</string>
+  <string name="home_welcome_message">Introduce el código para conectar a una sesión.</string>
+  <string name="label_permissions">Concede el permiso para el Micrófono por favor.</string>
+  <string name="manage_streaming">Sesión de Droid Cast: %1$s</string>
+  <string name="media_share_chooser_title">Compartir enlace:</string>
+  <string name="media_share_give_code">Da este código al cliente:</string>
+  <string name="media_share_nsd_error">Ha habido un error, inténtalo de nuevo por favor.</string>
+  <string name="media_share_text_app">Abre este enlace para conectar a una sesión de Droid Cast: %1$s
+  </string>
+  <string name="media_share_text_pc">Abre este enlace en un Media Player para conectar a una sesión
+    de Droid Cast: %1$s (VLC por ejemplo).
+  </string>
+  <string name="mute_micro">Silenciar micrófono</string>
+  <string name="notification_stop">Finalizar sesión</string>
+  <string name="session_finished">La sesión ha finalizado.</string>
+  <string name="session_finished_by_server">La sesión ha sido finalizada por el servidor.</string>
+  <string name="session_finished_close">Cerrar</string>
+  <string name="share_app_link_button">Compartir para aplicación</string>
+  <string name="share_pc_link_button">Compartir para PC</string>
+  <string name="streaming_clients">Número de usuarios: %1$d.</string>
+  <string name="streaming_started">La sesión ha comenzado, tu pantalla puede ser vista por los
+    usuarios.
+  </string>
+  <string name="video_activity_connected">¡Conectado!</string>
+  <string name="video_activity_connecting">Estableciendo conexión</string>
+  <string name="video_activity_host_found">Servidor encontrado</string>
+  <string name="video_activity_looking_for_host">Buscando servidor</string>
+  <string name="notification_new_connection">Nueva conexión</string>
+</resources>

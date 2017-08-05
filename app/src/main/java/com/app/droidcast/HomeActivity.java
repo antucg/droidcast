@@ -107,12 +107,4 @@ public class HomeActivity extends BaseActivity {
     //startActivity(VideoActivityVLC.createIntentPath(HomeActivity.this,
     //    "rtsp://192.168.1.10:7654/test2-rtsp"));
   }
-
-  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (keyCode == KeyEvent.KEYCODE_BACK) {
-      HomeActivity.this.moveTaskToBack(true);
-      return true;
-    }
-    return super.onKeyDown(keyCode, event);
-  }
 }

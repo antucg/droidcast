@@ -101,7 +101,7 @@ public class NotificationUtils {
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
             .setContentTitle(context.getString(R.string.app_name))
-            .setContentText("New connection")
+            .setContentText(context.getString(R.string.notification_new_connection))
             .setDefaults(Notification.DEFAULT_ALL)
             .setPriority(Notification.PRIORITY_HIGH)
             .setAutoCancel(true);
