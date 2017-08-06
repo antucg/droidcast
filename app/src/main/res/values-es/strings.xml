@@ -2,7 +2,9 @@
 <resources>
   <string name="app_name">Droid Cast</string>
   <string name="enable_microphone">Activar micrófono</string>
-  <string name="enable_from_notification">(Lo puedes activar desde la notificación de la barra de estado)</string>
+  <string name="enable_from_notification">(Lo puedes activar desde la notificación de la barra de
+    estado)
+  </string>
   <string name="home_click_here_to_share">Pulsa aquí para\ncompartir tu pantalla</string>
   <string name="home_code_not_empty">El código no puede estar vacío.</string>
   <string name="home_connect_button">Conectar</string>
@@ -11,12 +13,13 @@
   <string name="label_permissions">Concede el permiso para el Micrófono por favor.</string>
   <string name="manage_streaming">Sesión de Droid Cast: %1$s</string>
   <string name="media_share_chooser_title">Compartir enlace:</string>
-  <string name="media_share_give_code">Da este código al cliente:</string>
+  <string name="media_share_give_code">Comparte este código con otro usuario:</string>
   <string name="media_share_nsd_error">Ha habido un error, inténtalo de nuevo por favor.</string>
-  <string name="media_share_text_app">Abre este enlace para conectar a una sesión de Droid Cast: %1$s
+  <string name="media_share_text_app">Abre este enlace para conectar a una sesión de Droid Cast:
+    %1$s
   </string>
-  <string name="media_share_text_pc">Abre este enlace en un Media Player para conectar a una sesión
-    de Droid Cast: %1$s (VLC por ejemplo).
+  <string name="media_share_text_pc">Abre este enlace en un Media Player (p. ej. VLC) para conectar
+    a una sesión de Droid Cast: %1$s.
   </string>
   <string name="mute_micro">Silenciar micrófono</string>
   <string name="notification_stop">Finalizar sesión</string>
