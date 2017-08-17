@@ -387,8 +387,8 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
 
   private void confirmLeave() {
     AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-    alertDialog.setTitle("Stop streaming");
-    alertDialog.setMessage("Do you want to finish this session?");
+    alertDialog.setTitle(getString(R.string.video_stop_dialog_title));
+    alertDialog.setMessage(getString(R.string.video_stop_dialog_body));
     alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
         new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int which) {
@@ -396,7 +396,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
             finish();
           }
         });
-    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
+    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel),
         new DialogInterface.OnClickListener() {
           @Override public void onClick(DialogInterface dialog, int which) {
             //  Do nothing

@@ -2,8 +2,6 @@
   <string name="app_name">Droid Cast</string>
 
   <!-- Home view -->
-  <string name="home_recycler_empty">No casted items yet, click here to start</string>
-  <string name="home_recycler_resource_type">Resource type</string>
   <string name="home_connect_button">Connect</string>
   <string name="home_type_code">Type code here</string>
   <string name="home_welcome_message">Enter a code below to connect to a session.</string>
@@ -22,13 +20,13 @@
   <string name="media_share_text_app">Click this link to connect to a Droid Cast session: %1$s
   </string>
   <string name="media_share_chooser_title">Share link:</string>
-  <string name="media_share_link_copied">Link copied.</string>
 
   <!-- Notification -->
   <string name="manage_streaming">Droid Cast session: %1$s.</string>
   <string name="streaming_clients">Number of users: %1$d.</string>
   <string name="notification_stop">Finish session</string>
   <string name="mute_micro">Mute microphone</string>
+  <string name="enable_micro">Mute microphone</string>
   <string name="notification_new_connection">New connection</string>
 
   <!-- Video activity -->
@@ -36,6 +34,9 @@
   <string name="video_activity_host_found">Host found</string>
   <string name="video_activity_connecting">Establishing connection</string>
   <string name="video_activity_connected">Connected!</string>
+  <string name="video_stop_dialog_title">Stop streaming</string>
+  <string name="video_stop_dialog_body">Do you want to finish this session?</string>
+  <string name="cancel">Cancel</string>
 
   <!-- Session finished -->
   <string name="session_finished_close">Close</string>

@@ -73,7 +73,9 @@ public class NotificationUtils {
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-    int muteIcon = audioManager.isMicrophoneMute() ? R.mipmap.mic_off : R.mipmap.mic_on;
+    boolean isMicMuted = audioManager.isMicrophoneMute();
+    int muteIcon = isMicMuted ? R.mipmap.mic_off : R.mipmap.mic_on;
+    int microphoneTextId = isMicMuted ? R.string.enable_microphone : R.string.mute_micro;
 
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
@@ -83,7 +85,7 @@ public class NotificationUtils {
             .setOngoing(true)
             .addAction(R.mipmap.ic_media_stop, context.getString(R.string.notification_stop),
                 stopPendingIntent)
-            .addAction(muteIcon, context.getString(R.string.mute_micro), mutePendingIntent);
+            .addAction(muteIcon, context.getString(microphoneTextId), mutePendingIntent);
     Intent resultIntent = MediaShareActivity.createIntent(context);
     TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
     stackBuilder.addParentStack(HomeActivity.class);

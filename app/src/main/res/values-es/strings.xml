@@ -22,6 +22,7 @@
     a una sesión de Droid Cast: %1$s.
   </string>
   <string name="mute_micro">Silenciar micrófono</string>
+  <string name="enable_micro">Activar micrófono</string>
   <string name="notification_stop">Finalizar sesión</string>
   <string name="session_finished">La sesión ha finalizado.</string>
   <string name="session_finished_by_server">La sesión ha sido finalizada por el servidor.</string>
@@ -37,4 +38,7 @@
   <string name="video_activity_host_found">Servidor encontrado</string>
   <string name="video_activity_looking_for_host">Buscando servidor</string>
   <string name="notification_new_connection">Nueva conexión</string>
+  <string name="video_stop_dialog_body">¿Quieres finalizar la sesión actual?</string>
+  <string name="video_stop_dialog_title">Finalizar sesión</string>
+  <string name="cancel">Cancelar</string>
 </resources>
