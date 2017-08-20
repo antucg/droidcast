@@ -6,6 +6,7 @@ import com.app.droidcast.dao.DaoException;
 import com.app.droidcast.dao.DaoFactory;
 import com.app.droidcast.models.Model;
 import com.app.droidcast.utils.DroidCastTestApp;
+import com.app.droidcast.utils.ioc.IOCProviderTest;
 import java.util.List;
 import javax.inject.Inject;
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class DaoTest {
   @Inject SharedPreferences sharedPreferences;
 
   @Before public void init() {
-    DroidCastTestApp.getComponent().inject(this);
+    IOCProviderTest.getInstance().inject(this);
   }
 
   @After public void after() {

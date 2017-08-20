@@ -48,6 +48,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   @Inject NsdUtils nsdUtils;
   @Inject NotificationUtils notificationUtils;
+  @Inject AudioManager audioManager;
 
   private static final int REQUEST_CODE = 1000;
   public static final String USERNAME = "d";
@@ -60,7 +61,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private boolean bound = false;
   private String code;
   private String linkURL = null;
-  private AudioManager audioManager;
 
   private boolean isStreaming = false;
   private int clientsCount = 0;
@@ -104,7 +104,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     IOCProvider.getInstance().inject(this);
 
     // Let's mute microphone by default
-    audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
     audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
     audioManager.setMicrophoneMute(true);
     mProjectionManager =
@@ -113,6 +112,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     Random rnd = new Random();
     code = Integer.toString(100000 + rnd.nextInt(900000));
     mediaShareCodeTextView.setText(code);
+    buildLinkURL();
   }
 
   @Override protected void onNewIntent(Intent intent) {
@@ -120,6 +120,9 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     if (intent.getBooleanExtra(INTENT_KEY_STOP, false)) {
       stopServer();
       startActivity(SessionFinishActivity.createIntent(this, false));
+      if (!isFinishing()) {
+        finish();
+      }
     }
   }
 
@@ -187,7 +190,9 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
   private void buildMediaProjection() {
     if (mMediaProjection == null) {
-      startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
+      if (mProjectionManager != null) {
+        startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
+      }
       return;
     }
     initSession();
@@ -259,7 +264,6 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
 
     // Build status bar notification
     notificationUtils.buildStreamNotification(code);
-    buildLinkURL();
   }
 
   private void buildLinkURL() {

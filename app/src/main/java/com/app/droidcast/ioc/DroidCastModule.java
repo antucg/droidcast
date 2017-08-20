@@ -1,8 +1,10 @@
 package com.app.droidcast.ioc;
 
 import android.app.Application;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import com.app.droidcast.dao.DaoFactory;
 import com.app.droidcast.dao.SharedPreferencesFactory;
 import com.app.droidcast.utils.MetaDataProvider;
@@ -47,6 +49,14 @@ import javax.inject.Singleton;
   }
 
   @Provides @Singleton NotificationUtils providesNotificationUtils() {
-    return new NotificationUtils(applicationContext);
+    return new NotificationUtils();
+  }
+
+  @Provides @Singleton AudioManager providesAudioManager() {
+    return (AudioManager) applicationContext.getSystemService(Context.AUDIO_SERVICE);
+  }
+
+  @Provides @Singleton NotificationManager providesNotificationManager() {
+    return (NotificationManager) applicationContext.getSystemService(Context.NOTIFICATION_SERVICE);
   }
 }

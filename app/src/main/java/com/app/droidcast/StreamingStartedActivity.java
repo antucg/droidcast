@@ -13,10 +13,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
+import com.app.droidcast.ioc.IOCProvider;
 import com.app.droidcast.utils.BounceView;
 import com.app.droidcast.utils.Units;
+import javax.inject.Inject;
 
 public class StreamingStartedActivity extends BaseActivity {
+
+  @Inject AudioManager audioManager;
 
   @BindView(R.id.streaming_started_textview) TextView streamingTextView;
   @BindView(R.id.enable_microphone_switch) Switch enableMicrophoneSwitch;
@@ -35,7 +39,9 @@ public class StreamingStartedActivity extends BaseActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_streaming_started);
 
+    IOCProvider.getInstance().inject(this);
     ButterKnife.bind(this);
+    enableMicrophoneSwitch.setChecked(!audioManager.isMicrophoneMute());
 
     streamingTextView.postDelayed(new Runnable() {
       @Override public void run() {
@@ -53,8 +59,6 @@ public class StreamingStartedActivity extends BaseActivity {
    */
   @OnCheckedChanged(R.id.enable_microphone_switch) public void onSwitchChange(
       CompoundButton compoundButton, boolean enable) {
-    AudioManager audioManager =
-        (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
     audioManager.setMicrophoneMute(!enable);
   }
 

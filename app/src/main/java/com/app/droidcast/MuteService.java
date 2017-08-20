@@ -15,6 +15,7 @@ public class MuteService extends IntentService {
   private static final String ACTION_MUTE = "com.app.droidcast.action.TOGGLE_MUTE_MICRO";
 
   @Inject NotificationUtils notificationUtils;
+  @Inject AudioManager audioManager;
 
   public MuteService() {
     super("MuteService");
@@ -46,7 +47,6 @@ public class MuteService extends IntentService {
    * Toggle microphone.
    */
   private void toggleMute() {
-    AudioManager audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
     audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
     if (!audioManager.isMicrophoneMute()) {
       audioManager.setMicrophoneMute(true);

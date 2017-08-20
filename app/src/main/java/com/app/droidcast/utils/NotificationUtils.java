@@ -12,22 +12,25 @@ import com.app.droidcast.HomeActivity;
 import com.app.droidcast.MediaShareActivity;
 import com.app.droidcast.MuteService;
 import com.app.droidcast.R;
+import com.app.droidcast.ioc.IOCProvider;
+import javax.inject.Inject;
 
 /**
  * Utility class to handle app notifications.
  */
 public class NotificationUtils {
-  private static final int STREAM_NOTIFICATION_ID = 1;
+
+  @Inject Context context;
+  @Inject AudioManager audioManager;
+  @Inject NotificationManager notificationManager;
+
+  public static final int STREAM_NOTIFICATION_ID = 1;
   private static final int NEW_CONNECTION_ID = 2;
-  private Context context;
-  private NotificationManager notificationManager;
   private String currentCode;
   private int clientsCount = 0;
 
-  public NotificationUtils(Context context) {
-    this.context = context;
-    notificationManager =
-        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+  public NotificationUtils() {
+    IOCProvider.getInstance().inject(this);
   }
 
   /**
@@ -72,11 +75,9 @@ public class NotificationUtils {
         PendingIntent.getService(context, (int) System.currentTimeMillis(), muteIntent,
             PendingIntent.FLAG_UPDATE_CURRENT);
 
-    AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     boolean isMicMuted = audioManager.isMicrophoneMute();
     int muteIcon = isMicMuted ? R.mipmap.mic_off : R.mipmap.mic_on;
     int microphoneTextId = isMicMuted ? R.string.enable_microphone : R.string.mute_micro;
-
     NotificationCompat.Builder mBuilder =
         new NotificationCompat.Builder(context).setSmallIcon(R.drawable.notification_bar_icon)
             .setContentTitle(context.getString(R.string.manage_streaming, currentCode))

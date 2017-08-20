@@ -37,22 +37,16 @@ dependencies {
   //  Lombok
   provided 'org.projectlombok:lombok:1.12.6'
   apt "org.projectlombok:lombok:1.12.6"
-  // https://mvnrepository.com/artifact/com.github.hoary.ffmpeg/FFmpeg-android-arm
-  //  compile group: 'com.github.hoary.ffmpeg', name: 'FFmpeg-android-arm', version: '2.0.1.1'
-  //  compile 'com.writingminds:FFmpegAndroid:0.3.2'
+
   compile project(':libstreaming')
 
-//  compile "de.mrmaffen:vlc-android-sdk:2.0.6"
   compile project(':libvlc')
   compile 'com.youview:tinydnssd:1.2.7'
-//  compile 'com.aaronhan:rtspclient:0.7'
-//  compile project(':rtspclient')
-
 
   //  Test
   testCompile 'junit:junit:4.12'
   testApt 'com.google.dagger:dagger-compiler:2.7'
-  testCompile 'org.robolectric:robolectric:3.1.2'
+  testCompile 'org.robolectric:robolectric:3.4.2'
   testCompile 'com.squareup.assertj:assertj-android:1.1.1'
   testCompile 'com.android.support:support-annotations:25.2.0'
   //  androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
