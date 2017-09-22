@@ -35,6 +35,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.app.droidcast.ioc.IOCProvider;
 import com.app.droidcast.utils.BounceView;
+import com.app.droidcast.utils.MetaDataProvider;
 import com.app.droidcast.utils.NotificationUtils;
 import com.app.droidcast.utils.NsdUtils;
 import com.app.droidcast.utils.Utils;
@@ -49,9 +50,10 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   @Inject NsdUtils nsdUtils;
   @Inject NotificationUtils notificationUtils;
   @Inject AudioManager audioManager;
+  @Inject MetaDataProvider metaDataProvider;
 
   private static final int REQUEST_CODE = 1000;
-  public static final String USERNAME = "d";
+  public static final String USERNAME = "droidCast";
   private static final String INTENT_KEY_STOP = "intent_key_stop";
 
   private MediaProjectionManager mProjectionManager;
@@ -269,7 +271,14 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   private void buildLinkURL() {
     String ip = Utils.getIPAddress(true);
     if (ip != null) {
-      linkURL = "rtsp://" + USERNAME + ":" + code + "@" + ip + ":" + nsdUtils.getAvailablePort();
+      linkURL = "rtsp://"
+          + USERNAME
+          + ":"
+          + Utils.MD5(metaDataProvider.getRtspKey() + code)
+          + "@"
+          + ip
+          + ":"
+          + nsdUtils.getAvailablePort();
     } else {
       sharePCLinkButton.setVisibility(View.GONE);
       shareSeparator.setVisibility(View.GONE);
@@ -350,7 +359,8 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
       RtspServer.LocalBinder binder = (RtspServer.LocalBinder) service;
       rtspServerService = binder.getService();
       bound = true;
-      rtspServerService.setAuthorization(USERNAME, code);
+      String password = Utils.MD5(metaDataProvider.getRtspKey() + code);
+      rtspServerService.setAuthorization(USERNAME, password);
     }
 
     @Override public void onServiceDisconnected(ComponentName name) {

@@ -16,6 +16,9 @@
     <meta-data
         android:name="nsdKey"
         android:value="$tSeqpL4vvWU?$Ce"/>
+    <meta-data
+        android:name="rtsp-private-key"
+        android:value="H2nT~r6RrJ;D.>GV"/>
 
     <activity
         android:name=".HomeActivity"

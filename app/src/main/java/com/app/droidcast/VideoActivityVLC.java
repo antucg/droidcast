@@ -22,8 +22,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.app.droidcast.ioc.IOCProvider;
 import com.app.droidcast.models.ConnectionInfo;
+import com.app.droidcast.utils.MetaDataProvider;
 import com.app.droidcast.utils.NsdUtils;
 import com.app.droidcast.utils.Units;
+import com.app.droidcast.utils.Utils;
 import java.util.ArrayList;
 import javax.inject.Inject;
 import org.videolan.libvlc.IVLCVout;
@@ -34,6 +36,7 @@ import org.videolan.libvlc.MediaPlayer;
 public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVideoLayoutListener {
 
   @Inject NsdUtils nsdUtils;
+  @Inject MetaDataProvider metaDataProvider;
 
   private static final String CODE_KEY = "code_key";
   private static final String PATH_KEY = "path_key";
@@ -171,7 +174,7 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
       Media media = new Media(mLibVLC, Uri.parse(connectionInfo != null ? "rtsp://"
           + MediaShareActivity.USERNAME
           + ":"
-          + code
+          + Utils.MD5(metaDataProvider.getRtspKey() + code)
           + "@"
           + connectionInfo.getHost()
           + ":"

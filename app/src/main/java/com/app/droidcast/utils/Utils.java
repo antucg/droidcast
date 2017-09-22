@@ -3,6 +3,7 @@ package com.app.droidcast.utils;
 import android.util.Log;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,6 +44,25 @@ public class Utils {
       }
     } catch (Exception ex) {
       Log.e(TAG, "[Utils] - getIPAddress(), error getting ip address");
+    }
+    return null;
+  }
+
+  /**
+   * Generates a hash of given string encrypted with MD5
+   * @param md5 String to encrypt
+   * @return Encrypted string
+   */
+  public static String MD5(String md5) {
+    try {
+      java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+      byte[] array = md.digest(md5.getBytes(Charset.forName("UTF-8")));
+      StringBuffer sb = new StringBuffer();
+      for (int i = 0; i < array.length; ++i) {
+        sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+      }
+      return sb.toString();
+    } catch (java.security.NoSuchAlgorithmException e) {
     }
     return null;
   }

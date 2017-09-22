@@ -32,6 +32,14 @@ public class MetaDataProvider {
   }
 
   /**
+   * Return RTSP "private" key
+   * @return RTSP key
+   */
+  public String getRtspKey() {
+    return getMetaData("rtsp-private-key");
+  }
+
+  /**
    * Method that returns a property from the manifest's meta data.
    *
    * @param property Property whose value we want to read.
