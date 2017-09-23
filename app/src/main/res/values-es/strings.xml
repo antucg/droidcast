@@ -41,4 +41,5 @@
   <string name="video_stop_dialog_body">¿Quieres finalizar la sesión actual?</string>
   <string name="video_stop_dialog_title">Finalizar sesión</string>
   <string name="cancel">Cancelar</string>
+  <string name="media_share_text_subject">Enlace Droid Cast</string>
 </resources>

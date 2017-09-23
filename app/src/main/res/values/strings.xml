@@ -20,6 +20,7 @@
   <string name="media_share_text_app">Click this link to connect to a Droid Cast session: %1$s
   </string>
   <string name="media_share_chooser_title">Share link:</string>
+  <string name="media_share_text_subject">Droid Cast link</string>
 
   <!-- Notification -->
   <string name="manage_streaming">Droid Cast session: %1$s.</string>

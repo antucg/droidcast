@@ -116,6 +116,7 @@ public class NotificationUtils {
    * Cancel notifications from the status bar.
    */
   public void cancelStreamNotification() {
+    System.out.println("DELETE NOTIFICATION");
     notificationManager.cancel(STREAM_NOTIFICATION_ID);
     notificationManager.cancel(NEW_CONNECTION_ID);
   }

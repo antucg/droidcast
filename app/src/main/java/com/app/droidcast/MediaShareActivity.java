@@ -331,10 +331,12 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
   }
 
   @Override public void onSessionStopped() {
-    if (clientsCount > 0) {
-      --clientsCount;
+    if (isStreaming) {
+      if (clientsCount > 0) {
+        --clientsCount;
+      }
+      notificationUtils.updateStreamNotification(clientsCount);
     }
-    notificationUtils.updateStreamNotification(clientsCount);
     Log.d(TAG, "[MediaShareActivity] - onSessionStopped()");
   }
 
@@ -405,6 +407,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     sendIntent.setAction(Intent.ACTION_SEND);
     sendIntent.setType("text/plain");
     sendIntent.putExtra(Intent.EXTRA_TEXT, link);
+    sendIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.media_share_text_subject));
     startActivity(Intent.createChooser(sendIntent, getString(R.string.media_share_chooser_title)));
   }
 }
