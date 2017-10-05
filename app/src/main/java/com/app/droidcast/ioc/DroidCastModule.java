@@ -10,6 +10,7 @@ import com.app.droidcast.dao.SharedPreferencesFactory;
 import com.app.droidcast.utils.MetaDataProvider;
 import com.app.droidcast.utils.NotificationUtils;
 import com.app.droidcast.utils.NsdUtils;
+import com.app.droidcast.utils.RedisUtils;
 import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
@@ -58,5 +59,9 @@ import javax.inject.Singleton;
 
   @Provides @Singleton NotificationManager providesNotificationManager() {
     return (NotificationManager) applicationContext.getSystemService(Context.NOTIFICATION_SERVICE);
+  }
+
+  @Provides @Singleton RedisUtils providesRedisUtils() {
+    return new RedisUtils();
   }
 }

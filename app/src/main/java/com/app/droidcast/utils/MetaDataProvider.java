@@ -25,6 +25,7 @@ public class MetaDataProvider {
 
   /**
    * Return Nsd "private" key
+   *
    * @return Nsd key
    */
   public String getNsdKey() {
@@ -33,10 +34,20 @@ public class MetaDataProvider {
 
   /**
    * Return RTSP "private" key
+   *
    * @return RTSP key
    */
   public String getRtspKey() {
     return getMetaData("rtsp-private-key");
+  }
+
+  /**
+   * Return Redis server url
+   *
+   * @return Redis url
+   */
+  public String getRedisHost() {
+    return getMetaData("redis-host");
   }
 
   /**

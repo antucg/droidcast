@@ -42,4 +42,5 @@
   <string name="video_stop_dialog_title">Finalizar sesión</string>
   <string name="cancel">Cancelar</string>
   <string name="media_share_text_subject">Enlace Droid Cast</string>
+  <string name="video_activity_session_not_found">Servidor no encontrado</string>
 </resources>

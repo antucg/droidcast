@@ -35,6 +35,7 @@
   <string name="video_activity_host_found">Host found</string>
   <string name="video_activity_connecting">Establishing connection</string>
   <string name="video_activity_connected">Connected!</string>
+  <string name="video_activity_session_not_found">Host couldn\'t be found</string>
   <string name="video_stop_dialog_title">Stop streaming</string>
   <string name="video_stop_dialog_body">Do you want to finish this session?</string>
   <string name="cancel">Cancel</string>

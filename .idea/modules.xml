@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/DroidCast.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/DroidCast.iml" />
-      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/app/app.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/app/app.iml" />
-      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming/libstreaming.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/libstreaming/libstreaming.iml" />
-      <module fileurl="file://$USER_HOME$/Google Drive/Projects/DroidCast/libvlc/libvlc.iml" filepath="$USER_HOME$/Google Drive/Projects/DroidCast/libvlc/libvlc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/droidcast.iml" filepath="$PROJECT_DIR$/droidcast.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libstreaming/libstreaming.iml" filepath="$PROJECT_DIR$/libstreaming/libstreaming.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libvlc/libvlc.iml" filepath="$PROJECT_DIR$/libvlc/libvlc.iml" />
     </modules>
   </component>
 </project>

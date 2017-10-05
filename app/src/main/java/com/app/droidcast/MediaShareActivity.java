@@ -38,7 +38,11 @@ import com.app.droidcast.utils.BounceView;
 import com.app.droidcast.utils.MetaDataProvider;
 import com.app.droidcast.utils.NotificationUtils;
 import com.app.droidcast.utils.NsdUtils;
+import com.app.droidcast.utils.RedisUtils;
 import com.app.droidcast.utils.Utils;
+import com.github.druk.dnssd.DNSSDRegistration;
+import com.github.druk.dnssd.DNSSDService;
+import com.github.druk.dnssd.RegisterListener;
 import java.util.Random;
 import javax.inject.Inject;
 import net.majorkernelpanic.streaming.Session;
@@ -48,6 +52,7 @@ import net.majorkernelpanic.streaming.rtsp.RtspServer;
 public class MediaShareActivity extends BaseActivity implements Session.Callback {
 
   @Inject NsdUtils nsdUtils;
+  @Inject RedisUtils redisUtils;
   @Inject NotificationUtils notificationUtils;
   @Inject AudioManager audioManager;
   @Inject MetaDataProvider metaDataProvider;
@@ -134,6 +139,7 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
       mMediaProjection = null;
     }
     nsdUtils.tearDown();
+    redisUtils.deleteSession(code);
     stopService(new Intent(this, RtspServer.class));
     notificationUtils.cancelStreamNotification();
     // Put microphone back to its normal state
@@ -241,28 +247,28 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
     bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     startService(intent);
 
-    // Register NSD service so device can be found on the network
-    nsdUtils.registerNsdService(this, code, new NsdManager.RegistrationListener() {
-      @Override public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+    nsdUtils.newRegisterNsdService(code, new RegisterListener() {
+      @Override
+      public void serviceRegistered(DNSSDRegistration registration, int flags, String serviceName,
+          String regType, String domain) {
+        Log.d(TAG, "[NsdUtils] - onServiceRegistered");
+      }
+
+      @Override public void operationFailed(DNSSDService service, int errorCode) {
         Log.e(TAG, "[NsdUtils] - onRegistrationFailed, " + errorCode);
         stopServer();
         Toast.makeText(MediaShareActivity.this, getString(R.string.media_share_nsd_error),
             Toast.LENGTH_LONG).show();
         finish();
       }
-
-      @Override public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-        Log.e(TAG, "[NsdUtils] - onUnregistrationFailed, " + errorCode);
-      }
-
-      @Override public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-        Log.d(TAG, "[NsdUtils] - onServiceRegistered");
-      }
-
-      @Override public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-        Log.d(TAG, "[NsdUtils] - onServiceUnregistered");
-      }
     });
+
+    final int port = Utils.getAvailablePort(this);
+    try {
+      redisUtils.saveSession(code, port);
+    } catch (Exception e) {
+      Log.e(TAG, "Redis save session error", e);
+    }
 
     // Build status bar notification
     notificationUtils.buildStreamNotification(code);
@@ -278,20 +284,11 @@ public class MediaShareActivity extends BaseActivity implements Session.Callback
           + "@"
           + ip
           + ":"
-          + nsdUtils.getAvailablePort();
+          + Utils.getAvailablePort(this);
     } else {
       sharePCLinkButton.setVisibility(View.GONE);
       shareSeparator.setVisibility(View.GONE);
     }
-  }
-
-  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (keyCode == KeyEvent.KEYCODE_BACK) {
-      if (!isStreaming) {
-        stopServer();
-      }
-    }
-    return super.onKeyDown(keyCode, event);
   }
 
   @Override protected void onStop() {

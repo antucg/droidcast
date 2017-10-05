@@ -88,11 +88,9 @@ public class NotificationUtils {
                 stopPendingIntent)
             .addAction(muteIcon, context.getString(microphoneTextId), mutePendingIntent);
     Intent resultIntent = MediaShareActivity.createIntent(context);
-    TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-    stackBuilder.addParentStack(HomeActivity.class);
-    stackBuilder.addNextIntent(resultIntent);
     PendingIntent resultPendingIntent =
-        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent.getActivity(context.getApplicationContext(), (int) System.currentTimeMillis(),
+            resultIntent, 0);
     mBuilder.setContentIntent(resultPendingIntent);
     notificationManager.notify(STREAM_NOTIFICATION_ID, mBuilder.build());
   }
@@ -116,7 +114,6 @@ public class NotificationUtils {
    * Cancel notifications from the status bar.
    */
   public void cancelStreamNotification() {
-    System.out.println("DELETE NOTIFICATION");
     notificationManager.cancel(STREAM_NOTIFICATION_ID);
     notificationManager.cancel(NEW_CONNECTION_ID);
   }

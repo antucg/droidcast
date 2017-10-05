@@ -24,6 +24,7 @@ import com.app.droidcast.ioc.IOCProvider;
 import com.app.droidcast.models.ConnectionInfo;
 import com.app.droidcast.utils.MetaDataProvider;
 import com.app.droidcast.utils.NsdUtils;
+import com.app.droidcast.utils.RedisUtils;
 import com.app.droidcast.utils.Units;
 import com.app.droidcast.utils.Utils;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.videolan.libvlc.MediaPlayer;
 public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVideoLayoutListener {
 
   @Inject NsdUtils nsdUtils;
+  @Inject RedisUtils redisUtils;
   @Inject MetaDataProvider metaDataProvider;
 
   private static final String CODE_KEY = "code_key";
@@ -106,25 +108,46 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
     mLibVLC = new LibVLC(this, args);
     mMediaPlayer = new MediaPlayer(mLibVLC);
 
-    nsdUtils.discoverNsdService(this, code, new NsdUtils.NsdResolveCallback() {
+    nsdUtils.newDiscoverNsdService(code, new NsdUtils.NsdResolveCallback() {
       @Override public void onHostFound(final ConnectionInfo connectionInfo) {
-        VideoActivityVLC.this.connectionInfo = connectionInfo;
-        Log.d(TAG, "[VideoActivityVLC] - onHostFound()");
-        VideoActivityVLC.this.runOnUiThread(new Runnable() {
-          @Override public void run() {
-            updateStatusTextView(getString(R.string.video_activity_host_found));
+        onSessionFound(connectionInfo);
+      }
+
+      @Override public void onHostNotFound() {
+        redisUtils.getSessionData(code, new RedisUtils.RedisSession() {
+          @Override public void data(ConnectionInfo connectionInfo) {
+            onSessionFound(connectionInfo);
+          }
+
+          @Override public void sessionNotFound() {
+            updateStatusTextView(getString(R.string.video_activity_session_not_found));
             loadingOverlay.postDelayed(new Runnable() {
               @Override public void run() {
-                updateStatusTextView(getString(R.string.video_activity_connecting));
+                finish();
               }
-            }, 1000);
-            startPlayer();
+            }, 2000);
           }
         });
       }
 
       @Override public void onError() {
         Log.e(TAG, "[VideoActivityVLC] - error");
+      }
+    });
+  }
+
+  private void onSessionFound(ConnectionInfo connectionInfo) {
+    VideoActivityVLC.this.connectionInfo = connectionInfo;
+    Log.d(TAG, "[VideoActivityVLC] - onHostFound()");
+    VideoActivityVLC.this.runOnUiThread(new Runnable() {
+      @Override public void run() {
+        updateStatusTextView(getString(R.string.video_activity_host_found));
+        loadingOverlay.postDelayed(new Runnable() {
+          @Override public void run() {
+            updateStatusTextView(getString(R.string.video_activity_connecting));
+          }
+        }, 1000);
+        startPlayer();
       }
     });
   }
@@ -171,16 +194,17 @@ public class VideoActivityVLC extends BaseActivity implements IVLCVout.OnNewVide
 
   private void startPlayer() {
     if (!mMediaPlayer.isPlaying()) {
-      Media media = new Media(mLibVLC, Uri.parse(connectionInfo != null ? "rtsp://"
-          + MediaShareActivity.USERNAME
-          + ":"
-          + Utils.MD5(metaDataProvider.getRtspKey() + code)
-          + "@"
-          + connectionInfo.getHost()
-          + ":"
-          + connectionInfo.getPort() : path));
+      Media media = new Media(mLibVLC, Uri.parse(
+          connectionInfo != null ? "rtsp://"
+              + MediaShareActivity.USERNAME
+              + ":"
+              + Utils.MD5(metaDataProvider.getRtspKey() + code)
+              + "@"
+              + connectionInfo.getHost()
+              + ":"
+              + connectionInfo.getPort() : path));
       media.setHWDecoderEnabled(true, false);
-      media.addOption(":network-caching=150");
+      media.addOption(":network-caching=300");
       media.addOption(":clock-jitter=0");
       media.addOption(":clock-synchro=0");
       mMediaPlayer.setMedia(media);

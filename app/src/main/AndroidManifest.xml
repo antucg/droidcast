@@ -19,6 +19,9 @@
     <meta-data
         android:name="rtsp-private-key"
         android:value="H2nT~r6RrJ;D.>GV"/>
+    <meta-data
+        android:name="redis-host"
+        android:value="redis://redistogo:336b09fa72e5b4be91dc38e9fed44f05@crestfish.redistogo.com:11166/0"/>
 
     <activity
         android:name=".HomeActivity"
@@ -43,9 +46,12 @@
         android:theme="@style/AppTheme.NoActionBar">
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
+
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:host="app.droidcast.com"
+
+        <data
+            android:host="app.droidcast.com"
             android:scheme="http"/>
       </intent-filter>
     </activity>

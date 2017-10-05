@@ -1,11 +1,15 @@
 package com.app.droidcast.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import net.majorkernelpanic.streaming.rtsp.RtspServer;
 
 /**
  * Created by antonio.carrasco on 10/06/2017.
@@ -13,6 +17,7 @@ import java.util.List;
 public class Utils {
 
   private final static String TAG = "Utils";
+  public final static int DEFAULT_PORT = 55640;
 
   /**
    * Get IP address from first non-localhost interface
@@ -48,8 +53,22 @@ public class Utils {
     return null;
   }
 
+  public static int getAvailablePort(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    return Integer.parseInt(
+        sharedPreferences.getString(RtspServer.KEY_PORT, String.valueOf(DEFAULT_PORT)));
+    //try {
+    //  ServerSocket serverSocket = new ServerSocket(0);
+    //  return serverSocket.getLocalPort();
+    //} catch (IOException e) {
+    //  e.printStackTrace();
+    //}
+    //return 0;
+  }
+
   /**
    * Generates a hash of given string encrypted with MD5
+   *
    * @param md5 String to encrypt
    * @return Encrypted string
    */
@@ -59,7 +78,7 @@ public class Utils {
       byte[] array = md.digest(md5.getBytes(Charset.forName("UTF-8")));
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < array.length; ++i) {
-        sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+        sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
       }
       return sb.toString();
     } catch (java.security.NoSuchAlgorithmException e) {

@@ -9,6 +9,7 @@ import com.app.droidcast.VideoActivityVLC;
 import com.app.droidcast.utils.MetaDataProvider;
 import com.app.droidcast.utils.NotificationUtils;
 import com.app.droidcast.utils.NsdUtils;
+import com.app.droidcast.utils.RedisUtils;
 import dagger.Component;
 import javax.inject.Singleton;
 
@@ -33,4 +34,6 @@ import javax.inject.Singleton;
   void inject(NotificationUtils notificationUtils);
 
   void inject(StreamingStartedActivity streamingStartedActivity);
+
+  void inject(RedisUtils redisUtils);
 }
